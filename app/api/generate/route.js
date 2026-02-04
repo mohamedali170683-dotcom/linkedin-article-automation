@@ -48,15 +48,30 @@ STRUCTURE:
 6. The Bottom Line (memorable closing insight)
 7. Discussion CTA
 
+INLINE IMAGES:
+- Include exactly 2-3 sectionImages that visualize key research findings within the article
+- Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1), "concept" (a specific photographic scene), and "caption"
+- Image concepts should visualize the RESEARCH being discussed: e.g., for an anchoring study, "Close-up of a real estate agent's hands holding property listings on a mahogany desk, with a calculator and pen, warm afternoon light through window blinds"
+- For studies about consumer behavior: visualize the experimental setup or the real-world scenario described
+- NEVER include text, numbers, charts, or diagrams in image concepts. Only photographic scenes
+- Space images evenly throughout the article (e.g., after paragraphs 3, 7, 11)
+
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {
   "title": "Attention-grabbing title that attacks a specific common practice or belief",
   "subtitle": "The metric/insight subhead",
   "article": "Full article text with proper paragraph breaks using double newlines. Must include detailed research methodology descriptions.",
-  "teaserPost": "200-300 word LinkedIn feed post that teases the article with a surprising data point from the research. Include line breaks for readability.",
+  "teaserPost": "200-300 word LinkedIn feed post written as flowing, connected paragraphs (NOT isolated single sentences). Write it like a mini-essay that tells a story: start with a surprising hook paragraph (2-3 sentences), then a paragraph explaining the research finding that connects logically to the hook, then a paragraph with the practical implication. Each paragraph should flow naturally into the next. Use line breaks between paragraphs, NOT between every sentence. End with a CTA like 'Full article in the comments' or 'Link in comments'.",
   "twitterPost": "280 character max tweet with a specific number or finding that provokes curiosity",
   "hashtags": ["#HumanPsychologyAndMarketing", "plus 5 more relevant hashtags"],
   "thumbnailConcept": "A specific, concrete visual metaphor for this topic. Describe a SCENE, not abstract concepts. Example: 'A single chess piece standing on a vast empty board with dramatic lighting from the left, photographed from a low angle' or 'An hourglass where the top half contains colorful brand logos dissolving into gray sand in the bottom half'. Must be a single concrete image, not a collage. ABSOLUTELY NO TEXT, WORDS, LETTERS, NUMBERS, OR TYPOGRAPHY IN THE IMAGE.",
+  "sectionImages": [
+    {
+      "afterParagraph": 3,
+      "concept": "A specific photographic scene that visualizes the research finding discussed in the preceding paragraphs. Must be concrete and literal, not abstract. NO TEXT.",
+      "caption": "Short caption describing what this image represents in context of the research"
+    }
+  ],
   "citations": ["List of sources cited in the article with author, title, year, and page numbers where available"]
 }`;
 
@@ -87,7 +102,7 @@ Requirements:
 4. Connect to practical marketing applications (Google Ads, brand building, consumer behavior)
 5. Write for an audience of marketing professionals who want evidence-based insights
 6. Make it memorable and shareable
-7. The teaser post should be compelling and end with "Link in comments" or similar CTA
+7. The teaser post MUST be written as connected, flowing paragraphs (2-3 paragraphs of 2-4 sentences each). Do NOT write isolated single sentences separated by line breaks. It should read like a compelling mini-essay, not a list of disconnected statements. End with "Link in comments" or similar CTA
 8. The Twitter post should be punchy, contrarian, and under 280 characters
 9. The citations list must ONLY include sources mentioned in the Research Brief
 10. For EVERY study or experiment mentioned, describe: who ran it, how many participants/cases, what was measured, what the control vs experimental conditions were, and the specific numerical result
@@ -104,7 +119,7 @@ Remember: NO em-dashes. Use commas or periods instead.`;
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 6000,
+        max_tokens: 7000,
         messages: [
           { role: "user", content: userPrompt }
         ],
@@ -161,6 +176,50 @@ Remember: NO em-dashes. Use commas or periods instead.`;
         } catch (imgError) {
           console.error('Image generation failed (non-blocking):', imgError);
         }
+      }
+
+      // Generate inline section images with DALL-E 3
+      if (parsed.sectionImages?.length > 0 && process.env.OPENAI_API_KEY) {
+        const sectionImagePromises = parsed.sectionImages.map(async (img, idx) => {
+          try {
+            const sectionImgPrompt = `${img.concept}. Photorealistic editorial photography style, cinematic lighting, shallow depth of field. Professional magazine quality. Muted color palette. CRITICAL: ABSOLUTELY ZERO text, words, letters, numbers, or typography. Pure visual imagery only.`;
+
+            const sectionImgRes = await fetch('https://api.openai.com/v1/images/generations', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'dall-e-3',
+                prompt: sectionImgPrompt,
+                n: 1,
+                size: '1792x1024',
+                quality: 'standard',
+              }),
+            });
+
+            const sectionImgData = await sectionImgRes.json();
+            const sectionDalleUrl = sectionImgData.data?.[0]?.url;
+
+            if (sectionDalleUrl) {
+              const sectionImgDownload = await fetch(sectionDalleUrl);
+              const sectionImgBuffer = await sectionImgDownload.arrayBuffer();
+              const sectionBlob = await put(
+                `images/week-${week}-section-${idx + 1}.png`,
+                Buffer.from(sectionImgBuffer),
+                { access: 'public', contentType: 'image/png' }
+              );
+              return { ...img, imageUrl: sectionBlob.url };
+            }
+            return img;
+          } catch (sectionImgError) {
+            console.error(`Section image ${idx + 1} generation failed:`, sectionImgError);
+            return img;
+          }
+        });
+
+        parsed.sectionImages = await Promise.all(sectionImagePromises);
       }
 
       // Auto-save to blob storage

@@ -196,7 +196,22 @@ export default function Dashboard() {
 
   const formatArticleForLinkedIn = () => {
     if (!generatedContent) return '';
-    return `${generatedContent.title}\n\n${generatedContent.subtitle}\n\n${generatedContent.article}\n\n---\n\nSources:\n${generatedContent.citations?.join('\n') || ''}\n\n${generatedContent.hashtags?.join(' ') || ''}`;
+    let articleText = generatedContent.article;
+
+    // Interleave section image URLs into the article text for copy
+    if (generatedContent.sectionImages?.length > 0) {
+      const paragraphs = articleText.split('\n\n');
+      const sectionImages = generatedContent.sectionImages.filter(img => img.imageUrl);
+      // Insert image references after designated paragraphs (reverse to preserve indices)
+      [...sectionImages].sort((a, b) => b.afterParagraph - a.afterParagraph).forEach(img => {
+        if (img.afterParagraph && img.afterParagraph <= paragraphs.length) {
+          paragraphs.splice(img.afterParagraph, 0, `[Image: ${img.caption}]\n${img.imageUrl}`);
+        }
+      });
+      articleText = paragraphs.join('\n\n');
+    }
+
+    return `${generatedContent.title}\n\n${generatedContent.subtitle}\n\n${articleText}\n\n---\n\nSources:\n${generatedContent.citations?.join('\n') || ''}\n\n${generatedContent.hashtags?.join(' ') || ''}`;
   };
 
   return (
@@ -317,7 +332,7 @@ export default function Dashboard() {
                   </p>
                   <p className="text-gray-500 text-sm mt-2">Topic: {selectedWeek?.topic}</p>
                   {isGenerating && (
-                    <p className="text-gray-400 text-xs mt-4">Grounding in research library sources + generating header image</p>
+                    <p className="text-gray-400 text-xs mt-4">Grounding in research library sources + generating header & inline images (~45s)</p>
                   )}
                 </div>
               ) : generatedContent ? (
@@ -423,9 +438,40 @@ export default function Dashboard() {
                             )}
                           </button>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-4 max-h-[500px] overflow-y-auto">
-                          <div className="prose max-w-none whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
-                            {generatedContent.article}
+                        <div className="bg-gray-50 rounded-lg p-4 max-h-[600px] overflow-y-auto">
+                          <div className="prose max-w-none text-sm text-gray-700 leading-relaxed">
+                            {(() => {
+                              const paragraphs = generatedContent.article.split('\n\n').filter(p => p.trim());
+                              const sectionImages = generatedContent.sectionImages || [];
+                              const imageMap = {};
+                              sectionImages.forEach(img => {
+                                if (img.imageUrl && img.afterParagraph) {
+                                  imageMap[img.afterParagraph] = img;
+                                }
+                              });
+
+                              return paragraphs.map((paragraph, idx) => {
+                                const paragraphNum = idx + 1;
+                                const img = imageMap[paragraphNum];
+                                return (
+                                  <div key={idx}>
+                                    <p className="mb-4 whitespace-pre-wrap">{paragraph}</p>
+                                    {img && (
+                                      <div className="my-6 rounded-lg overflow-hidden shadow-md">
+                                        <img
+                                          src={img.imageUrl}
+                                          alt={img.caption}
+                                          className="w-full"
+                                        />
+                                        <p className="text-xs text-gray-500 italic px-3 py-2 bg-gray-100 border-t">
+                                          {img.caption}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              });
+                            })()}
                           </div>
                         </div>
                         <div className="mt-4 flex flex-wrap gap-2">
