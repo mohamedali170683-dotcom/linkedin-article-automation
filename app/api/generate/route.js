@@ -23,32 +23,41 @@ CRITICAL SOURCE RULE:
 - If the research brief is limited, write a shorter but still compelling article using only what is provided.
 - Every claim must be traceable to the provided brief. Do not fabricate or supplement with general knowledge.
 
+RESEARCH DEPTH REQUIREMENTS:
+- When referencing a study, ALWAYS explain the methodology: who conducted it, sample size, what they measured, how they measured it, and the specific numerical findings
+- Example: Instead of "research shows anchoring works," write "Kahneman describes an experiment where real-estate agents assessed the value of a house. Half saw a substantially higher asking price. Despite their expertise, the agents were significantly influenced by the anchor price, yet insisted they were not."
+- Describe the experimental setup so the reader can visualize it: "In Cialdini's study, beef buyers were divided into three groups..."
+- Include specific numbers from the research brief: percentages, sample sizes, effect sizes, time periods
+- When a study compared groups, describe both the control and experimental conditions
+- Make the reader feel like they are reading the original research, not a summary of a summary
+
 VOICE GUIDELINES:
 - Use contrarian hooks that challenge conventional marketing wisdom
 - Reference historical figures or philosophical concepts in the opening
 - Write in an intellectual but accessible tone
 - NEVER use em-dashes. Use commas, periods, or regular hyphens instead
-- Keep the article between 1,500-1,800 words
+- Keep the article between 1,800-2,200 words (longer to accommodate research depth)
 - End with a discussion question to drive engagement
 
 STRUCTURE:
-1. Hook (contrarian statement or historical reference)
-2. The Research (what the science actually shows)
-3. Why This Matters (practical implications)
-4. Application (actionable recommendations)
-5. The Bottom Line (memorable closing insight)
-6. Discussion CTA
+1. Hook (contrarian statement or provocative challenge to a specific common practice)
+2. The Research (deep dive into methodology and findings, describe HOW studies were conducted)
+3. The Numbers (specific data points, effect sizes, percentages from the research)
+4. Why This Matters (practical implications for marketers)
+5. Application (actionable recommendations grounded in the evidence)
+6. The Bottom Line (memorable closing insight)
+7. Discussion CTA
 
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {
-  "title": "Attention-grabbing title that challenges assumptions",
+  "title": "Attention-grabbing title that attacks a specific common practice or belief",
   "subtitle": "The metric/insight subhead",
-  "article": "Full article text with proper paragraph breaks using double newlines",
-  "teaserPost": "200-300 word LinkedIn feed post that teases the article. Include line breaks for readability.",
-  "twitterPost": "280 character max tweet that teases the article with a hook",
+  "article": "Full article text with proper paragraph breaks using double newlines. Must include detailed research methodology descriptions.",
+  "teaserPost": "200-300 word LinkedIn feed post that teases the article with a surprising data point from the research. Include line breaks for readability.",
+  "twitterPost": "280 character max tweet with a specific number or finding that provokes curiosity",
   "hashtags": ["#HumanPsychologyAndMarketing", "plus 5 more relevant hashtags"],
-  "thumbnailConcept": "Visual concept description for the article image",
-  "citations": ["List of sources cited in the article with author, title, and year"]
+  "thumbnailConcept": "A specific, concrete visual metaphor for this topic. Describe a SCENE, not abstract concepts. Example: 'A single chess piece standing on a vast empty board with dramatic lighting from the left, photographed from a low angle' or 'An hourglass where the top half contains colorful brand logos dissolving into gray sand in the bottom half'. Must be a single concrete image, not a collage. ABSOLUTELY NO TEXT, WORDS, LETTERS, NUMBERS, OR TYPOGRAPHY IN THE IMAGE.",
+  "citations": ["List of sources cited in the article with author, title, year, and page numbers where available"]
 }`;
 
     let userPrompt = `Generate a complete LinkedIn article package for Week ${weekData.week}: "${weekData.topic}"
@@ -81,6 +90,8 @@ Requirements:
 7. The teaser post should be compelling and end with "Link in comments" or similar CTA
 8. The Twitter post should be punchy, contrarian, and under 280 characters
 9. The citations list must ONLY include sources mentioned in the Research Brief
+10. For EVERY study or experiment mentioned, describe: who ran it, how many participants/cases, what was measured, what the control vs experimental conditions were, and the specific numerical result
+11. The thumbnailConcept must describe a SPECIFIC photographic scene (not abstract shapes or diagrams). Think editorial magazine photography. Describe camera angle, lighting, subject, mood. NEVER include any text elements.
 
 Remember: NO em-dashes. Use commas or periods instead.`;
 
@@ -93,7 +104,7 @@ Remember: NO em-dashes. Use commas or periods instead.`;
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 5000,
+        max_tokens: 6000,
         messages: [
           { role: "user", content: userPrompt }
         ],
@@ -117,7 +128,7 @@ Remember: NO em-dashes. Use commas or periods instead.`;
       // Generate header image with DALL-E 3
       if (parsed.thumbnailConcept && process.env.OPENAI_API_KEY) {
         try {
-          const imagePrompt = `Professional, modern LinkedIn article header image. ${parsed.thumbnailConcept}. Clean, minimalist style with subtle gradients and abstract shapes. No text, no words, no letters in the image.`;
+          const imagePrompt = `${parsed.thumbnailConcept}. Photorealistic editorial photography style, cinematic lighting, shallow depth of field, 35mm lens. High-end magazine cover quality. Muted professional color palette with one accent color. CRITICAL: The image must contain ABSOLUTELY ZERO text, zero words, zero letters, zero numbers, zero symbols, zero typography of any kind. Pure visual imagery only.`;
 
           const imgRes = await fetch('https://api.openai.com/v1/images/generations', {
             method: 'POST',
