@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { getWeekData } from '../../lib/calendar';
 import researchBriefs from '../../lib/research-briefs.json';
+import bookPagesUrls from '../../lib/book-pages-urls.json';
 
 export async function POST(request) {
   try {
@@ -48,13 +49,12 @@ STRUCTURE:
 6. The Bottom Line (memorable closing insight)
 7. Discussion CTA
 
-INLINE IMAGES:
-- Include exactly 2-3 sectionImages that visualize key research findings within the article
-- Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1), "concept" (a specific photographic scene), and "caption"
-- Image concepts should visualize the RESEARCH being discussed: e.g., for an anchoring study, "Close-up of a real estate agent's hands holding property listings on a mahogany desk, with a calculator and pen, warm afternoon light through window blinds"
-- For studies about consumer behavior: visualize the experimental setup or the real-world scenario described
-- NEVER include text, numbers, charts, or diagrams in image concepts. Only photographic scenes
-- Space images evenly throughout the article (e.g., after paragraphs 3, 7, 11)
+INLINE BOOK SCREENSHOTS:
+- You will be provided with a list of AVAILABLE BOOK PAGES (screenshots from Mohamed's actual research library)
+- Select 2-3 of the most relevant book pages to embed inline within the article
+- Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1) and "bookPageIndex" (the index number from the available pages list, starting from 0)
+- Place each book page screenshot RIGHT AFTER the paragraph that discusses the research shown on that page
+- Space images evenly throughout the article
 
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {
@@ -68,8 +68,7 @@ FORMAT YOUR RESPONSE AS JSON with these exact keys:
   "sectionImages": [
     {
       "afterParagraph": 3,
-      "concept": "A specific photographic scene that visualizes the research finding discussed in the preceding paragraphs. Must be concrete and literal, not abstract. NO TEXT.",
-      "caption": "Short caption describing what this image represents in context of the research"
+      "bookPageIndex": 0
     }
   ],
   "citations": ["List of sources cited in the article with author, title, year, and page numbers where available"]
@@ -91,6 +90,15 @@ ${brief.keyQuotes.join('\n')}
 
 Key Findings:
 ${brief.keyFindings.join('\n')}`;
+    }
+
+    // Add available book pages for inline screenshots
+    const weekPages = bookPagesUrls[String(weekData.week)] || [];
+    if (weekPages.length > 0) {
+      userPrompt += `
+
+AVAILABLE BOOK PAGE SCREENSHOTS (select 2-3 to embed inline):
+${weekPages.map((p, i) => `[${i}] ${p.caption} (from ${p.book}, page ${p.page})`).join('\n')}`;
     }
 
     userPrompt += `
@@ -178,48 +186,24 @@ Remember: NO em-dashes. Use commas or periods instead.`;
         }
       }
 
-      // Generate inline section images with DALL-E 3
-      if (parsed.sectionImages?.length > 0 && process.env.OPENAI_API_KEY) {
-        const sectionImagePromises = parsed.sectionImages.map(async (img, idx) => {
-          try {
-            const sectionImgPrompt = `${img.concept}. Photorealistic editorial photography style, cinematic lighting, shallow depth of field. Professional magazine quality. Muted color palette. CRITICAL: ABSOLUTELY ZERO text, words, letters, numbers, or typography. Pure visual imagery only.`;
-
-            const sectionImgRes = await fetch('https://api.openai.com/v1/images/generations', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                model: 'dall-e-3',
-                prompt: sectionImgPrompt,
-                n: 1,
-                size: '1792x1024',
-                quality: 'standard',
-              }),
-            });
-
-            const sectionImgData = await sectionImgRes.json();
-            const sectionDalleUrl = sectionImgData.data?.[0]?.url;
-
-            if (sectionDalleUrl) {
-              const sectionImgDownload = await fetch(sectionDalleUrl);
-              const sectionImgBuffer = await sectionImgDownload.arrayBuffer();
-              const sectionBlob = await put(
-                `images/week-${week}-section-${idx + 1}.png`,
-                Buffer.from(sectionImgBuffer),
-                { access: 'public', contentType: 'image/png' }
-              );
-              return { ...img, imageUrl: sectionBlob.url };
+      // Resolve book page screenshots for inline images
+      if (parsed.sectionImages?.length > 0) {
+        const weekPages = bookPagesUrls[String(weekData.week)] || [];
+        parsed.sectionImages = parsed.sectionImages
+          .map(img => {
+            const pageData = weekPages[img.bookPageIndex];
+            if (pageData && pageData.imageUrl) {
+              return {
+                afterParagraph: img.afterParagraph,
+                imageUrl: pageData.imageUrl,
+                caption: pageData.caption,
+                book: pageData.book,
+                page: pageData.page,
+              };
             }
-            return img;
-          } catch (sectionImgError) {
-            console.error(`Section image ${idx + 1} generation failed:`, sectionImgError);
-            return img;
-          }
-        });
-
-        parsed.sectionImages = await Promise.all(sectionImagePromises);
+            return null;
+          })
+          .filter(Boolean);
       }
 
       // Auto-save to blob storage

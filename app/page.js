@@ -457,14 +457,19 @@ export default function Dashboard() {
                                   <div key={idx}>
                                     <p className="mb-4 whitespace-pre-wrap">{paragraph}</p>
                                     {img && (
-                                      <div className="my-6 rounded-lg overflow-hidden shadow-md">
+                                      <div className="my-6 rounded-lg overflow-hidden shadow-md border border-gray-200">
+                                        <div className="bg-amber-50 px-3 py-1.5 border-b border-amber-200 flex items-center gap-2">
+                                          <BookOpen className="w-3.5 h-3.5 text-amber-700" />
+                                          <span className="text-xs font-medium text-amber-800">Source Material</span>
+                                        </div>
                                         <img
                                           src={img.imageUrl}
                                           alt={img.caption}
                                           className="w-full"
                                         />
-                                        <p className="text-xs text-gray-500 italic px-3 py-2 bg-gray-100 border-t">
-                                          {img.caption}
+                                        <p className="text-xs text-gray-600 px-3 py-2 bg-gray-50 border-t">
+                                          <span className="font-medium">{img.caption}</span>
+                                          {img.book && <span className="text-gray-400 ml-1">- p.{img.page}</span>}
                                         </p>
                                       </div>
                                     )}
