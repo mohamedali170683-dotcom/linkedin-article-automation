@@ -15,6 +15,13 @@ export async function POST(request) {
 
     const systemPrompt = `You are generating a LinkedIn article for Mohamed Hamdy, Search Marketing Director at WPP Media Germany.
 
+CRITICAL SOURCE RULE:
+- You MUST ONLY use information, quotes, and findings from the RESEARCH BRIEF provided below.
+- The research brief contains real excerpts from Mohamed's personal library of behavioral science and marketing books.
+- Do NOT add any statistics, quotes, or claims from outside these sources.
+- If the research brief is limited, write a shorter but still compelling article using only what is provided.
+- Every claim must be traceable to the provided brief. Do not fabricate or supplement with general knowledge.
+
 VOICE GUIDELINES:
 - Use contrarian hooks that challenge conventional marketing wisdom
 - Reference historical figures or philosophical concepts in the opening
@@ -22,7 +29,6 @@ VOICE GUIDELINES:
 - NEVER use em-dashes. Use commas, periods, or regular hyphens instead
 - Keep the article between 1,500-1,800 words
 - End with a discussion question to drive engagement
-- You have been provided with actual excerpts from source books. Use these real quotes and findings rather than inventing statistics.
 
 STRUCTURE:
 1. Hook (contrarian statement or historical reference)
@@ -65,13 +71,15 @@ ${brief.keyFindings.join('\n')}`;
     userPrompt += `
 
 Requirements:
-1. Ground every claim in the actual research provided in the Research Brief above
-2. Use the specific quotes and findings provided, do not fabricate statistics
-3. Connect to practical marketing applications (Google Ads, brand building, consumer behavior)
-4. Write for an audience of marketing professionals who want evidence-based insights
-5. Make it memorable and shareable
-6. The teaser post should be compelling and end with "Link in comments" or similar CTA
-7. The Twitter post should be punchy, contrarian, and under 280 characters
+1. ONLY use information from the Research Brief above. Do not add external knowledge or statistics.
+2. Use the specific quotes and findings provided word-for-word where possible.
+3. Every citation must reference a book or paper from the Research Brief.
+4. Connect to practical marketing applications (Google Ads, brand building, consumer behavior)
+5. Write for an audience of marketing professionals who want evidence-based insights
+6. Make it memorable and shareable
+7. The teaser post should be compelling and end with "Link in comments" or similar CTA
+8. The Twitter post should be punchy, contrarian, and under 280 characters
+9. The citations list must ONLY include sources mentioned in the Research Brief
 
 Remember: NO em-dashes. Use commas or periods instead.`;
 
