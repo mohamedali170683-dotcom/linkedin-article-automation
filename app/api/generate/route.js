@@ -49,12 +49,12 @@ STRUCTURE:
 6. The Bottom Line (memorable closing insight)
 7. Discussion CTA
 
-INLINE BOOK SCREENSHOTS:
-- You will be provided with a list of AVAILABLE BOOK PAGES (screenshots from Mohamed's actual research library)
-- Select 2-3 of the most relevant book pages to embed inline within the article
-- Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1) and "bookPageIndex" (the index number from the available pages list, starting from 0)
-- Place each book page screenshot RIGHT AFTER the paragraph that discusses the research shown on that page
-- Space images evenly throughout the article
+INLINE RESEARCH CHARTS/FIGURES:
+- You will be provided with a list of AVAILABLE CHARTS AND FIGURES (cropped from Mohamed's actual research library)
+- Select 1-2 of the most relevant charts or figures to embed inline within the article
+- Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1) and "bookPageIndex" (the index number from the available list, starting from 0)
+- Place each chart RIGHT AFTER the paragraph that discusses the specific research finding shown in that chart
+- The chart should visually reinforce the point being made in the preceding paragraph
 
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {
@@ -92,12 +92,12 @@ Key Findings:
 ${brief.keyFindings.join('\n')}`;
     }
 
-    // Add available book pages for inline screenshots
+    // Add available charts/figures for inline embedding
     const weekPages = bookPagesUrls[String(weekData.week)] || [];
     if (weekPages.length > 0) {
       userPrompt += `
 
-AVAILABLE BOOK PAGE SCREENSHOTS (select 2-3 to embed inline):
+AVAILABLE RESEARCH CHARTS/FIGURES (select 1-2 to embed inline):
 ${weekPages.map((p, i) => `[${i}] ${p.caption} (from ${p.book}, page ${p.page})`).join('\n')}`;
     }
 

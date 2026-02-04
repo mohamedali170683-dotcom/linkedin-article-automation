@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-Extract specific pages from research books as PNG images and upload to Vercel Blob.
+Extract charts and figures from research books as cropped PNG images and upload to Vercel Blob.
 
 Usage:
-  BLOB_READ_WRITE_TOKEN=vercel_blob_xxx python3 scripts/extract-book-pages.py
-
-  Or pass it as argument:
   python3 scripts/extract-book-pages.py --token vercel_blob_xxx
+  python3 scripts/extract-book-pages.py --token vercel_blob_xxx --preview  # local only, no upload
+  python3 scripts/extract-book-pages.py --token vercel_blob_xxx --week 5   # single week
 
 This script:
-1. Reads the book-pages-index.json mapping (topic -> book pages)
-2. Extracts each page as a high-quality PNG
-3. Uploads to Vercel Blob storage
-4. Outputs a book-pages-urls.json with permanent URLs
+1. Reads book-pages-index.json (topic -> book pages with crop regions)
+2. Extracts and crops each page to isolate charts/figures
+3. Uploads cropped images to Vercel Blob storage
+4. Outputs book-pages-urls.json with permanent URLs
+
+Crop format in index: "crop": [left%, top%, right%, bottom%]
+  - Percentages of page dimensions (0-100)
+  - Example: [0, 30, 55, 95] = left half, bottom 65% of page
 
 Requirements:
   pip3 install pymupdf requests
-
-Get your BLOB_READ_WRITE_TOKEN from:
-  Vercel Dashboard -> Your Project -> Storage -> Blob -> Settings -> Read/Write Token
 """
 
 import fitz  # pymupdf
@@ -35,8 +35,10 @@ INDEX_FILE = PROJECT_DIR / "app" / "lib" / "book-pages-index.json"
 OUTPUT_FILE = PROJECT_DIR / "app" / "lib" / "book-pages-urls.json"
 
 # Parse arguments
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="Extract charts/figures from research books")
 parser.add_argument("--token", help="Vercel Blob read/write token")
+parser.add_argument("--preview", action="store_true", help="Preview mode: extract locally without uploading")
+parser.add_argument("--week", type=str, help="Extract only a specific week number")
 args = parser.parse_args()
 
 # Try to load .env.local for blob token
@@ -50,9 +52,8 @@ if env_file.exists():
                 os.environ.setdefault(key.strip(), val.strip())
 
 BLOB_TOKEN = args.token or os.environ.get("BLOB_READ_WRITE_TOKEN")
-if not BLOB_TOKEN:
-    print("ERROR: Provide BLOB_READ_WRITE_TOKEN via --token flag or environment variable")
-    print("Get it from: Vercel Dashboard -> Storage -> Blob -> Settings")
+if not BLOB_TOKEN and not args.preview:
+    print("ERROR: Provide BLOB_READ_WRITE_TOKEN via --token flag or use --preview for local testing")
     sys.exit(1)
 
 # Book filename -> full path mapping
@@ -82,19 +83,16 @@ BOOK_PATHS = {
 
 def find_book_path(book_name, section_hint=None):
     """Find the actual path for a book, trying multiple strategies."""
-    # Direct match with section hint
     if section_hint:
         path = BOOKS_DIR / section_hint / book_name
         if path.exists():
             return path
 
-    # Direct match from BOOK_PATHS
     if book_name in BOOK_PATHS:
         path = BOOK_PATHS[book_name]
         if path.exists():
             return path
 
-    # Try searching by partial name
     sections = [section_hint] if section_hint else ["visibility", "behavioral_science"]
     for section in sections:
         section_dir = BOOKS_DIR / section
@@ -103,7 +101,6 @@ def find_book_path(book_name, section_hint=None):
                 if book_name.lower().replace(".pdf", "") in pdf.name.lower():
                     return pdf
 
-    # Try all sections as fallback
     for section in ["visibility", "behavioral_science"]:
         section_dir = BOOKS_DIR / section
         if section_dir.exists():
@@ -114,16 +111,37 @@ def find_book_path(book_name, section_hint=None):
     return None
 
 
-def extract_page(pdf_path, page_num, output_path, dpi=200):
-    """Extract a single page from a PDF as a PNG image."""
+def extract_cropped_page(pdf_path, page_num, output_path, crop=None, dpi=250):
+    """Extract a cropped region from a PDF page as a PNG image.
+
+    Args:
+        pdf_path: Path to the PDF file
+        page_num: 1-indexed page number
+        output_path: Where to save the PNG
+        crop: [left%, top%, right%, bottom%] percentages (0-100), or None for full page
+        dpi: Resolution for rendering
+    """
     doc = fitz.open(str(pdf_path))
     if page_num < 1 or page_num > doc.page_count:
         print(f"  WARNING: Page {page_num} out of range (1-{doc.page_count}) for {pdf_path.name}")
         doc.close()
         return False
 
-    page = doc[page_num - 1]  # 0-indexed
-    pix = page.get_pixmap(dpi=dpi)
+    page = doc[page_num - 1]
+    page_rect = page.rect
+
+    if crop:
+        left_pct, top_pct, right_pct, bottom_pct = crop
+        clip = fitz.Rect(
+            page_rect.x0 + (page_rect.width * left_pct / 100),
+            page_rect.y0 + (page_rect.height * top_pct / 100),
+            page_rect.x0 + (page_rect.width * right_pct / 100),
+            page_rect.y0 + (page_rect.height * bottom_pct / 100),
+        )
+        pix = page.get_pixmap(dpi=dpi, clip=clip)
+    else:
+        pix = page.get_pixmap(dpi=dpi)
+
     pix.save(str(output_path))
     doc.close()
     return True
@@ -132,7 +150,6 @@ def extract_page(pdf_path, page_num, output_path, dpi=200):
 def upload_to_blob(file_path, blob_path):
     """Upload a file to Vercel Blob storage."""
     if not BLOB_TOKEN:
-        print("  WARNING: No BLOB_READ_WRITE_TOKEN set, skipping upload")
         return None
 
     with open(file_path, "rb") as f:
@@ -157,68 +174,90 @@ def upload_to_blob(file_path, blob_path):
 
 def main():
     if not INDEX_FILE.exists():
-        print(f"ERROR: {INDEX_FILE} not found. Create it first.")
+        print(f"ERROR: {INDEX_FILE} not found.")
         sys.exit(1)
 
     with open(INDEX_FILE) as f:
         index = json.load(f)
 
+    # Load existing URLs if doing single-week update
     urls = {}
-    tmp_dir = Path("/tmp/book-pages")
+    if args.week and OUTPUT_FILE.exists():
+        with open(OUTPUT_FILE) as f:
+            urls = json.load(f)
+
+    tmp_dir = Path("/tmp/book-pages-charts")
     tmp_dir.mkdir(exist_ok=True)
 
-    total = sum(len(pages) for pages in index.values())
+    # Filter to single week if specified
+    weeks_to_process = {args.week: index[args.week]} if args.week else index
+
+    total = sum(len(pages) for pages in weeks_to_process.values())
     done = 0
 
-    for week_key, pages in index.items():
+    for week_key, pages in weeks_to_process.items():
         urls[week_key] = []
-        for page_info in pages:
+        for entry_idx, page_info in enumerate(pages):
             done += 1
             book = page_info["book"]
             section = page_info.get("section")
             page_num = page_info["page"]
             caption = page_info.get("caption", f"Page {page_num} from {book}")
+            crop = page_info.get("crop")
 
             book_path = find_book_path(book, section)
             if not book_path:
                 print(f"  [{done}/{total}] SKIP: Book not found: {book}")
                 continue
 
-            # Extract page
-            png_name = f"week-{week_key}-{book.replace('.pdf', '')}-p{page_num}.png"
+            crop_tag = f"-chart{entry_idx}" if crop else f"-full{entry_idx}"
+            png_name = f"week-{week_key}-{book.replace('.pdf', '')}-p{page_num}{crop_tag}.png"
             tmp_path = tmp_dir / png_name
 
-            print(f"  [{done}/{total}] Extracting {book} p.{page_num}...")
-            if not extract_page(book_path, page_num, tmp_path):
+            crop_desc = f" crop={crop}" if crop else " (full page)"
+            print(f"  [{done}/{total}] Extracting {book} p.{page_num}{crop_desc}...")
+
+            if not extract_cropped_page(book_path, page_num, tmp_path, crop=crop):
                 continue
 
-            # Upload to blob
-            blob_path = f"book-pages/{png_name}"
-            url = upload_to_blob(tmp_path, blob_path)
+            file_size_kb = tmp_path.stat().st_size / 1024
+            print(f"    Size: {file_size_kb:.0f}KB")
 
-            if url:
-                urls[week_key].append({
-                    "book": book,
-                    "page": page_num,
-                    "caption": caption,
-                    "imageUrl": url,
-                })
-                print(f"    -> Uploaded: {url[:80]}...")
-            else:
-                # Store local path as fallback
+            if args.preview:
                 urls[week_key].append({
                     "book": book,
                     "page": page_num,
                     "caption": caption,
                     "localPath": str(tmp_path),
                 })
+                print(f"    -> Preview saved: {tmp_path}")
+            else:
+                blob_path = f"book-charts/{png_name}"
+                url = upload_to_blob(tmp_path, blob_path)
 
-    # Save URL mapping
+                if url:
+                    urls[week_key].append({
+                        "book": book,
+                        "page": page_num,
+                        "caption": caption,
+                        "imageUrl": url,
+                    })
+                    print(f"    -> Uploaded: {url[:80]}...")
+                else:
+                    urls[week_key].append({
+                        "book": book,
+                        "page": page_num,
+                        "caption": caption,
+                        "localPath": str(tmp_path),
+                    })
+
     with open(OUTPUT_FILE, "w") as f:
         json.dump(urls, f, indent=2)
 
-    print(f"\nDone! Extracted {done} pages.")
+    print(f"\nDone! Processed {done} chart extractions.")
     print(f"URL mapping saved to: {OUTPUT_FILE}")
+    if args.preview:
+        print(f"Preview images in: {tmp_dir}")
 
 
 if __name__ == "__main__":
