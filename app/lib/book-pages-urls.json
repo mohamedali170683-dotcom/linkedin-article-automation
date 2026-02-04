@@ -1,1 +1,796 @@
-{}
+{
+  "1": [
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 37,
+      "caption": "How Brands Grow: Mental availability and brand penetration, Byron Sharp",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-1-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p37-jmraDwfTLErDaDlMqcPrEOCzRpmhwK.png"
+    },
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 75,
+      "caption": "Mental and physical availability as key drivers of brand growth",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-1-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p75-wRKCr18JJ4tjrTQwqUFIkjm0ExbmUq.png"
+    },
+    {
+      "book": "749951885-Jenni-Romaniuk-DBAs-and-Mental-Market-Share-1710328019.pdf",
+      "page": 3,
+      "caption": "Jenni Romaniuk: Mental Market Share framework",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-1-749951885-Jenni-Romaniuk-DBAs-and-Mental-Market-Share-1710328019-p3-ClG8NvfWDG3Z8JbQbFwTZuNwU596h4.png"
+    }
+  ],
+  "2": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 25,
+      "caption": "System 1 vs System 2: Two modes of thinking, Daniel Kahneman",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-2-Daniel-Kahneman-Thinking-Fast-and-Slow--p25-AcqEEbpZiHKnBOnl8fkugdeThPwLEI.png"
+    },
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 31,
+      "caption": "The lazy System 2: How cognitive effort works",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-2-Daniel-Kahneman-Thinking-Fast-and-Slow--p31-MUnqZzsEvIDyJ3FSkWGQE1bPX7MJLe.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 15,
+      "caption": "Richard Shotton: Applying System 1 thinking to marketing decisions",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-2-The_Choice_Factory_-_Richard_Shotton-p15-BU6G2DFXo0PlAItBis33wtnBh8wgWe.png"
+    }
+  ],
+  "3": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 116,
+      "caption": "Robert Cialdini: Social Proof - the principle of consensus",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-3-Influence_-_Robert_B_Cialdini-p116-ckyeowu7jf0Hae1FRQ93FV4haKtSPa.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 25,
+      "caption": "Richard Shotton: Social proof in advertising effectiveness",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-3-The_Choice_Factory_-_Richard_Shotton-p25-swqp38AuwjGhLLvfy5SknZ4mm4NwI8.png"
+    },
+    {
+      "book": "Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut.pdf",
+      "page": 45,
+      "caption": "Nancy Harhut: Using social proof to drive consumer action",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-3-Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut-p45-mTj2B73vRvjQdtNVUguloIH6YT3TeV.png"
+    }
+  ],
+  "4": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 284,
+      "caption": "Daniel Kahneman: Loss aversion and prospect theory",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-4-Daniel-Kahneman-Thinking-Fast-and-Slow--p284-P4v3uHLVq6ZyhrOQ673ZyjUw8GOtu3.png"
+    },
+    {
+      "book": "prospect-theory-an-analysis-of-decision-under-risk-4z6oysdahj.pdf",
+      "page": 6,
+      "caption": "Kahneman & Tversky: Prospect Theory value function curve",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-4-prospect-theory-an-analysis-of-decision-under-risk-4z6oysdahj-p6-gNfoOwVqPI3JcbRkq3XgIVFJ69xVxD.png"
+    },
+    {
+      "book": "nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526.pdf",
+      "page": 38,
+      "caption": "Thaler & Sunstein: Loss aversion in choice architecture",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-4-nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526-p38-PKuadYAPr4ubUgytxFm0TCk1x7e0za.png"
+    }
+  ],
+  "5": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 28,
+      "caption": "Binet & Field: Brand vs activation campaigns - profit, share growth, and ESOV efficiency over time (Figures 23-25)",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-5-SYS1-long-and-short-of-it-p28-rvCUlXovu9r253dT0OfAeu2VSvoaNb.png"
+    },
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 40,
+      "caption": "Binet & Field: The 60:40 split delivers maximum efficiency and effectiveness (Figures 37-38)",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-5-SYS1-long-and-short-of-it-p40-UyUdOczrFEbuHAHbtAX19mC4gk5ftQ.png"
+    },
+    {
+      "book": "20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era.pdf",
+      "page": 8,
+      "caption": "IPA: Brand building takes over as primary growth driver after 6 months",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-5-20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era-p8-MlO6tncMxCzjS8LN49JSAR2JaM6pGu.png"
+    },
+    {
+      "book": "LIN_B2B-Marketing-Report-Digital-v02.pdf",
+      "page": 17,
+      "caption": "LinkedIn B2B Institute: Optimum budget split varies by sector (Figure 6)",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-5-LIN_B2B-Marketing-Report-Digital-v02-p17-2sC7uZvrO5DE1G64Jh03EdVxxVTUdk.png"
+    }
+  ],
+  "6": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 123,
+      "caption": "Daniel Kahneman: The anchoring effect in judgment and estimation",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-6-Daniel-Kahneman-Thinking-Fast-and-Slow--p123-Rzszg3UNtWAuJLMuqMMc1bA3ef49ZW.png"
+    },
+    {
+      "book": "predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724.pdf",
+      "page": 30,
+      "caption": "Dan Ariely: Anchoring experiments with Social Security numbers",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-6-predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724-p30-Slx3sUHkQT7uPTYU3rsUa7XfpSdqYl.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 42,
+      "caption": "Richard Shotton: Anchoring in pricing and marketing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-6-The_Choice_Factory_-_Richard_Shotton-p42-UExFPQxVau1V2wAiovVV2fXeFIbpaO.png"
+    }
+  ],
+  "7": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 15,
+      "caption": "Binet & Field: Share of Voice vs Share of Market relationship",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-7-SYS1-long-and-short-of-it-p15-t09cadN44PgiAO5DijJUYJdf7eb8mr.png"
+    },
+    {
+      "book": "Budgeting for the Upturn - Does Share of Voice Matter _ Nielsen.pdf",
+      "page": 3,
+      "caption": "Nielsen: ESOV and market share growth correlation",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-7-Budgeting%20for%20the%20Upturn%20-%20Does%20Share%20of%20Voice%20Matter%20_%20Nielsen-p3-9673OnfYUQyv14HPPJ2EQQfujcNXBK.png"
+    },
+    {
+      "book": "LIN_B2B-Marketing-Report-Digital-v02.pdf",
+      "page": 13,
+      "caption": "LinkedIn B2B Institute: SOV above SOM drives growth",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-7-LIN_B2B-Marketing-Report-Digital-v02-p13-CmFjS8qQwOCgt39QdzTAZAaKlIpSbJ.png"
+    },
+    {
+      "book": "share-of-search-for-eff-week.pdf",
+      "page": 5,
+      "caption": "Les Binet: Share of Search as a proxy for Share of Voice",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-7-share-of-search-for-eff-week-p5-9w9yXoNpOuVq4qzjxWRQnoiQwY0Sk5.png"
+    }
+  ],
+  "8": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 30,
+      "caption": "Robert Cialdini: The reciprocity principle in persuasion",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-8-Influence_-_Robert_B_Cialdini-p30-JCX3ScvFMmpP1JxLGJqJQ4t8oMKcyP.png"
+    },
+    {
+      "book": "Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut.pdf",
+      "page": 52,
+      "caption": "Nancy Harhut: Reciprocity tactics in marketing campaigns",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-8-Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut-p52-B5KKeBSU2fcMBPSfmSZPTgur7ED3ao.png"
+    }
+  ],
+  "9": [
+    {
+      "book": "nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526.pdf",
+      "page": 89,
+      "caption": "Thaler & Sunstein: Choice architecture and default options",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-9-nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526-p89-axlogS4EXwkd7elnc6ezSlrODFbIa6.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 95,
+      "caption": "Richard Shotton: Choice architecture in practice",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-9-The_Choice_Factory_-_Richard_Shotton-p95-3ygX89tJoeBDPf5SFWKbqHZ9i2leK6.png"
+    }
+  ],
+  "10": [
+    {
+      "book": "749951885-Jenni-Romaniuk-DBAs-and-Mental-Market-Share-1710328019.pdf",
+      "page": 5,
+      "caption": "Jenni Romaniuk: Framework for distinctive brand assets",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-10-749951885-Jenni-Romaniuk-DBAs-and-Mental-Market-Share-1710328019-p5-c4jC9tkRlGDd7zKV2cmbgYpWALoxDD.png"
+    },
+    {
+      "book": "823591112-52-Understanding-Identifying-and-Building-Distinctive-Brand-Assets.pdf",
+      "page": 2,
+      "caption": "Understanding, identifying, and building distinctive brand assets",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-10-823591112-52-Understanding-Identifying-and-Building-Distinctive-Brand-Assets-p2-LreQzuEE2y9SrG5oHG9X8Mpv77ULUD.png"
+    },
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 177,
+      "caption": "Byron Sharp: The role of distinctive assets in brand growth",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-10-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p177-nmWgkcZKWDbzFqkNnawA8UPwyZNJlD.png"
+    }
+  ],
+  "11": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 237,
+      "caption": "Robert Cialdini: The scarcity principle and its power",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-11-Influence_-_Robert_B_Cialdini-p237-uZP8xgiUAIMfoFQC2uhkXuugauhbHR.png"
+    },
+    {
+      "book": "The_Illusion_of_Choice_-_Richard_Shotton.pdf",
+      "page": 55,
+      "caption": "Richard Shotton: Scarcity bias in consumer decisions",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-11-The_Illusion_of_Choice_-_Richard_Shotton-p55-ErqBLK1cmFtma2oZdIyGUKxCoA4d5C.png"
+    }
+  ],
+  "12": [
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 99,
+      "caption": "Byron Sharp: Mere exposure and brand familiarity effects",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-12-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p99-6NgfGEi3GNxCwrIo9zqwri61qkrn3P.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 130,
+      "caption": "Richard Shotton: The mere exposure effect in advertising",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-12-The_Choice_Factory_-_Richard_Shotton-p130-JnNY1BnW6cD4iwdueZGQ05Bs6YJ1k8.png"
+    }
+  ],
+  "13": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 6,
+      "caption": "Binet & Field: Summary of key effectiveness principles",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-13-SYS1-long-and-short-of-it-p6-AAtAycE33HxhPBqCQVSNG5bgWyGDy6.png"
+    },
+    {
+      "book": "20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era.pdf",
+      "page": 4,
+      "caption": "IPA: Overview of marketing effectiveness findings",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-13-20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era-p4-R89OMH3YsqLQkcKfE4mpUWi9rM0FqR.png"
+    }
+  ],
+  "14": [
+    {
+      "book": "Pre-Suasion__A_Revolutionary_Way_to_Influe_-_Robert_Cialdini.pdf",
+      "page": 25,
+      "caption": "Robert Cialdini: Pre-suasion - the art of strategic priming",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-14-Pre-Suasion__A_Revolutionary_Way_to_Influe_-_Robert_Cialdini-p25-GDX45yKvld8jEvknQ8jPCM5UeG5Mto.png"
+    },
+    {
+      "book": "Pre-Suasion__A_Revolutionary_Way_to_Influe_-_Robert_Cialdini.pdf",
+      "page": 65,
+      "caption": "Cialdini: Attention and association in pre-suasive messaging",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-14-Pre-Suasion__A_Revolutionary_Way_to_Influe_-_Robert_Cialdini-p65-76Fs0U8y0PhV8Aqp4RkdexX1LabOsO.png"
+    }
+  ],
+  "15": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 367,
+      "caption": "Daniel Kahneman: Framing effects on decision-making",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-15-Daniel-Kahneman-Thinking-Fast-and-Slow--p367-nDayCO5hLI7Z6jVV7Wv4cz86Lo9s7e.png"
+    },
+    {
+      "book": "nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526.pdf",
+      "page": 42,
+      "caption": "Thaler & Sunstein: Framing choices to influence behavior",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-15-nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526-p42-8QEjtTKqmKfPwdd05JLnHlfXOJfwNe.png"
+    }
+  ],
+  "16": [
+    {
+      "book": "_OceanofPDF.com_The_Attention_Merchants_-_Tim_Wu.pdf",
+      "page": 15,
+      "caption": "Tim Wu: The attention economy and its origins",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-16-_OceanofPDF.com_The_Attention_Merchants_-_Tim_Wu-p15-3UwGCMZdccPNPlGUWUpLNg3wS9qaNl.png"
+    },
+    {
+      "book": "651599331-Attention-and-Effort-Experimental-Psychology-Daniel-Kahneman-Z-Library.pdf",
+      "page": 10,
+      "caption": "Kahneman: Attention as a limited cognitive resource",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-16-651599331-Attention-and-Effort-Experimental-Psychology-Daniel-Kahneman-Z-Library-p10-DE5cfPZJMGgB0juflNVq7yAioDpJBy.png"
+    }
+  ],
+  "17": [
+    {
+      "book": "749951885-Jenni-Romaniuk-DBAs-and-Mental-Market-Share-1710328019.pdf",
+      "page": 8,
+      "caption": "Jenni Romaniuk: Category Entry Points framework",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-17-749951885-Jenni-Romaniuk-DBAs-and-Mental-Market-Share-1710328019-p8-JOu8wykHm56Vr9A69sMQlGi45mZnRz.png"
+    },
+    {
+      "book": "Category Entry Points in a B2B World.pdf",
+      "page": 5,
+      "caption": "Category Entry Points in B2B markets",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-17-Category%20Entry%20Points%20in%20a%20B2B%20World-p5-DqD05DAMuqrBHNCuM1MOuCZyp8Cop1.png"
+    }
+  ],
+  "18": [
+    {
+      "book": "Decoding_Decisions_The_Messy_Middle_of_Purchase_Behavior.pdf",
+      "page": 8,
+      "caption": "Google: The Messy Middle - how consumers make purchase decisions",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-18-Decoding_Decisions_The_Messy_Middle_of_Purchase_Behavior-p8-s6uzXpeCs3H61PVhCIg6v6NFNmfE8A.png"
+    },
+    {
+      "book": "Decoding_Decisions_Marketing_in_the_Messy_Middle_PartII.pdf",
+      "page": 12,
+      "caption": "Google: Exploration and evaluation loops in the messy middle",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-18-Decoding_Decisions_Marketing_in_the_Messy_Middle_PartII-p12-FMvXlgDWsZO3n5HYdOrTPsh6qrLXqX.png"
+    }
+  ],
+  "19": [
+    {
+      "book": "_OceanofPDF.com_Decoded_-_Phil_Barden.pdf",
+      "page": 25,
+      "caption": "Phil Barden: Neuromarketing fundamentals - how the brain processes brands",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-19-_OceanofPDF.com_Decoded_-_Phil_Barden-p25-KnvEAvrByP9wkQT5ESt7oT2nAksV0t.png"
+    },
+    {
+      "book": "pdfcoffee.com_buyology-martin-lindstrom-pdf-free.pdf",
+      "page": 15,
+      "caption": "Martin Lindstrom: Buyology - neuroscience insights for marketing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-19-pdfcoffee.com_buyology-martin-lindstrom-pdf-free-p15-JfZGdORqspUnnXX7e6uLCcf9ldE6jJ.png"
+    }
+  ],
+  "20": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 61,
+      "caption": "Robert Cialdini: Commitment and consistency principle",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-20-Influence_-_Robert_B_Cialdini-p61-PwFzfYIpZBpyYcvndj0ZL4OlEBsfrH.png"
+    },
+    {
+      "book": "Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut.pdf",
+      "page": 130,
+      "caption": "Nancy Harhut: Leveraging commitment in marketing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-20-Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut-p130-X5AmW2H4z9v2uZoJsONOSKhDj73TFM.png"
+    }
+  ],
+  "21": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 65,
+      "caption": "Daniel Kahneman: Cognitive ease and the fluency heuristic",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-21-Daniel-Kahneman-Thinking-Fast-and-Slow--p65-W6WI0qqYnp5UzH3j7SPoo0IVZyUF3n.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 75,
+      "caption": "Richard Shotton: Processing fluency in advertising",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-21-The_Choice_Factory_-_Richard_Shotton-p75-7Ctf95h1Dfizkpjduhbl9RDHdGItr8.png"
+    }
+  ],
+  "22": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 20,
+      "caption": "Binet & Field: Emotional vs rational campaigns - effectiveness data",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-22-SYS1-long-and-short-of-it-p20-92vF0mQbjCEwKl0A81TjuACBDdXmLf.png"
+    },
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 22,
+      "caption": "Binet & Field: Emotional campaigns produce more large profit effects",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-22-SYS1-long-and-short-of-it-p22-8z0HPATxiyNLbaE7prAShPUISQbsDK.png"
+    },
+    {
+      "book": "System1_Look out_A Glimpse Inside.pdf",
+      "page": 5,
+      "caption": "System1: How emotional response predicts advertising effectiveness",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-22-System1_Look%20out_A%20Glimpse%20Inside-p5-b0Z9zkYqmMgTVaSjuTCGIHMGDNWROS.png"
+    }
+  ],
+  "23": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 212,
+      "caption": "Robert Cialdini: The authority principle in persuasion",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-23-Influence_-_Robert_B_Cialdini-p212-ocWXv9eWyEKlJNPy82QST1wAF5rDDQ.png"
+    },
+    {
+      "book": "The_Illusion_of_Choice_-_Richard_Shotton.pdf",
+      "page": 85,
+      "caption": "Richard Shotton: Authority bias in marketing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-23-The_Illusion_of_Choice_-_Richard_Shotton-p85-bNdzIgZTXG50Sv6X2Gtz1DtzhoZpd7.png"
+    }
+  ],
+  "24": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 385,
+      "caption": "Daniel Kahneman: The peak-end rule in experience evaluation",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-24-Daniel-Kahneman-Thinking-Fast-and-Slow--p385-HkPn9M18B7skO1mckw9BEqIzRyFZCb.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 155,
+      "caption": "Richard Shotton: Peak-end rule in customer experience",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-24-The_Choice_Factory_-_Richard_Shotton-p155-qWVLadQD1crwS0lzzU351URwDr1qIS.png"
+    }
+  ],
+  "25": [
+    {
+      "book": "nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526.pdf",
+      "page": 75,
+      "caption": "Thaler & Sunstein: Habit formation and default behaviors",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-25-nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526-p75-nAAKqYcPqSo6o7NynrqevvhBHqFymn.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 108,
+      "caption": "Richard Shotton: Habit and its role in brand choice",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-25-The_Choice_Factory_-_Richard_Shotton-p108-7nbJZJtXM4WkCL82YKyTDEjxfOQihC.png"
+    }
+  ],
+  "26": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 80,
+      "caption": "Binet & Field: Summary of key findings on marketing effectiveness",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-26-SYS1-long-and-short-of-it-p80-uPtH2bHB5CScgx9SZu1zVCa45V98MT.png"
+    },
+    {
+      "book": "Effectiveness_In_Context.pdf",
+      "page": 10,
+      "caption": "Binet & Field: Effectiveness in Context - key principles",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-26-Effectiveness_In_Context-p10-DtfHEUKH5SW0fv1YH86W88K2R3biQA.png"
+    }
+  ],
+  "27": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 33,
+      "caption": "Binet & Field: Brand building ROI over long term",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-27-SYS1-long-and-short-of-it-p33-r0HrYtBpnf6rnetBghAI2i8WqhIjsV.png"
+    },
+    {
+      "book": "20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era.pdf",
+      "page": 12,
+      "caption": "IPA: Long-term profitability of brand building campaigns",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-27-20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era-p12-igLRQz4bymenIdtk932OAGwEXbyAjo.png"
+    }
+  ],
+  "28": [
+    {
+      "book": "Measuring-advertisings-effect-on-mental-availability-_-WARC.pdf",
+      "page": 5,
+      "caption": "WARC: Measuring advertising's effect on mental availability",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-28-Measuring-advertisings-effect-on-mental-availability-_-WARC-p5-qjQCQbYpFaSJGYxmUH9p5RbgoTzNno.png"
+    },
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 82,
+      "caption": "Byron Sharp: Mental availability metrics and measurement",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-28-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p82-To1kvn6zCCcCrYhGAEAoemTUWnwww4.png"
+    }
+  ],
+  "29": [
+    {
+      "book": "When Brands Go Dark  A Replication and Extension.pdf",
+      "page": 5,
+      "caption": "When Brands Go Dark: What happens when advertising stops",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-29-When%20Brands%20Go%20Dark%20%20A%20Replication%20and%20Extension-p5-27G1WoJNl5HnbPPuDWGd14lZHJ2Q60.png"
+    },
+    {
+      "book": "Ad Spending_ Maintaining Market Share.pdf",
+      "page": 4,
+      "caption": "Ad spending and maintaining market share over time",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-29-Ad%20Spending_%20Maintaining%20Market%20Share-p4-M3QkZjioWXu3re3PNsAmT5bmcOkubJ.png"
+    }
+  ],
+  "30": [
+    {
+      "book": "GEO- Generative Engine Optimization .pdf",
+      "page": 3,
+      "caption": "GEO: Generative Engine Optimization research findings",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-30-GEO-%20Generative%20Engine%20Optimization%20-p3-5Nn1GISKhn3sGuTFkt0Q8bqlW0Cmie.png"
+    },
+    {
+      "book": "Top Brand Visibility Factors in ChatGPT, AI Mode, and AI Overviews (75k Brands Studied).pdf",
+      "page": 8,
+      "caption": "Brand visibility factors in AI-powered search (75k brands study)",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-30-Top%20Brand%20Visibility%20Factors%20in%20ChatGPT%2C%20AI%20Mode%2C%20and%20AI%20Overviews%20%2875k%20Brands%20Studied%29-p8-U8n3IVOvaWaDg5UcGRBO5MgFQ7EGV5.png"
+    }
+  ],
+  "31": [
+    {
+      "book": "133646_Share_of_search_The_most_importa.pdf",
+      "page": 5,
+      "caption": "Les Binet: Share of Search as the most important marketing metric",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-31-133646_Share_of_search_The_most_importa-p5-wNtIYdVccZGHUVnCUTNap6FX1l7HN7.png"
+    },
+    {
+      "book": "share-of-search-for-eff-week.pdf",
+      "page": 8,
+      "caption": "Share of Search: Validation as a predictor of market share",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-31-share-of-search-for-eff-week-p8-np2sptWkDxGYsuBRUStZKizSdoX5Xa.png"
+    }
+  ],
+  "32": [
+    {
+      "book": "The-true-cost-of-advertising-attention-_-WARC.pdf",
+      "page": 4,
+      "caption": "WARC: The true cost of advertising attention",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-32-The-true-cost-of-advertising-attention-_-WARC-p4-X5zWGhXqQtFvYu7WvsiyZdazatsmrM.png"
+    },
+    {
+      "book": "Attention and Choice- A Review on Eye Movements in Decision Making.pdf",
+      "page": 6,
+      "caption": "Attention and Choice: Eye tracking research in decision-making",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-32-Attention%20and%20Choice-%20A%20Review%20on%20Eye%20Movements%20in%20Decision%20Making-p6-m3V1ZtqAqAfb8U3vYfFPfavoNGOf8O.png"
+    }
+  ],
+  "33": [
+    {
+      "book": "DJ 50 Years on.pdf",
+      "page": 10,
+      "caption": "Double Jeopardy Law: 50 years of evidence",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-33-DJ%2050%20Years%20on-p10-gDCl4ogGJFS3foXCV2g9NPa6T84l1K.png"
+    },
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 42,
+      "caption": "Byron Sharp: Double Jeopardy - small brands suffer twice",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-33-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p42-2ndLv5zhAcj5XUsALNOS2rA0m59tmN.png"
+    }
+  ],
+  "34": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 48,
+      "caption": "Binet & Field: Advertising elasticity and channel effects",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-34-SYS1-long-and-short-of-it-p48-bE7RR11ATSdrOURMa8b8AEQ4qto43c.png"
+    },
+    {
+      "book": "Long-term Advertising Effects and Optimal Budgeting.pdf",
+      "page": 8,
+      "caption": "Long-term advertising effects and optimal budget allocation",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-34-Long-term%20Advertising%20Effects%20and%20Optimal%20Budgeting-p8-Icpw2MsrYOQ9ZSSOeHwJgS8xdfVpWZ.png"
+    }
+  ],
+  "35": [
+    {
+      "book": "LIN_B2B-Marketing-Report-Digital-v02.pdf",
+      "page": 7,
+      "caption": "LinkedIn B2B Institute: The 95-5 Rule - only 5% are in-market now",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-35-LIN_B2B-Marketing-Report-Digital-v02-p7-4kQdQQrBXJe0LeoEgn9MrXQTWKXsNl.png"
+    },
+    {
+      "book": "584700281-Wiemer-Snijders-Eat-Your-Greens-Troubador-Publishing-Ltd-2018.pdf",
+      "page": 95,
+      "caption": "Eat Your Greens: Why most buyers aren't in-market today",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-35-584700281-Wiemer-Snijders-Eat-Your-Greens-Troubador-Publishing-Ltd-2018-p95-R0DbcFqoYYo2a3n6sGEGWNa6DubJPp.png"
+    }
+  ],
+  "36": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 56,
+      "caption": "Binet & Field: Reach vs frequency trade-offs in effectiveness",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-36-SYS1-long-and-short-of-it-p56-pKH2WVhfWQ8QIDwoSZMDfmWz8QTpQw.png"
+    },
+    {
+      "book": "_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp.pdf",
+      "page": 190,
+      "caption": "Byron Sharp: The importance of reach over frequency",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-36-_OceanofPDF.com_How_Brands_Grow_-_Byron_Sharp-p190-5qof4iwozJALO2fYDVwU6RNEky6h5j.png"
+    }
+  ],
+  "37": [
+    {
+      "book": "20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era.pdf",
+      "page": 32,
+      "caption": "IPA: The marketing effectiveness crisis in the digital era",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-37-20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era-p32-XnS0bAqvQ07mwZ96eRKjZZJLlsaCml.png"
+    },
+    {
+      "book": "20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era.pdf",
+      "page": 35,
+      "caption": "IPA: Declining effectiveness linked to short-termism",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-37-20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era-p35-13PsOGnA1HYkbY4tmXVYpWITYtp70y.png"
+    }
+  ],
+  "38": [
+    {
+      "book": "20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era.pdf",
+      "page": 25,
+      "caption": "IPA: Attribution challenges in digital marketing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-38-20171023-Media-in-focus-marketing-effectiveness-in-the-digital-era-p25-4xrqEaUUz9qaBiKjMNzqUXxcWrnk13.png"
+    },
+    {
+      "book": "Validation+&+Findings_+Media+investment+effect+using+Share+of+Search.pdf",
+      "page": 4,
+      "caption": "Media investment effects measured through Share of Search",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-38-Validation%2B%26%2BFindings_%2BMedia%2Binvestment%2Beffect%2Busing%2BShare%2Bof%2BSearch-p4-kc9eYlELOdrSII2d96Tw5MrbwzYrVC.png"
+    }
+  ],
+  "39": [
+    {
+      "book": "Effectiveness_In_Context.pdf",
+      "page": 114,
+      "caption": "Binet & Field: Overall impact of industry trends on effectiveness",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-39-Effectiveness_In_Context-p114-zAdh8EKEFwem5vkvuLkcI3d229QJwf.png"
+    },
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 78,
+      "caption": "Binet & Field: Summary of long and short principles",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-39-SYS1-long-and-short-of-it-p78-yPm91YQSlsNyE2XVesDi1xjmFESrFB.png"
+    }
+  ],
+  "40": [
+    {
+      "book": "_OceanofPDF.com_Alchemy_The_Dark_Art_and_Curious_Science_of_Creating_Magic_in_Brands_Business_and_Life_-_Rory_Sutherland.pdf",
+      "page": 25,
+      "caption": "Rory Sutherland: The magic of irrational thinking in business",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-40-_OceanofPDF.com_Alchemy_The_Dark_Art_and_Curious_Science_of_Creating_Magic_in_Brands_Business_and_Life_-_Rory_Sutherland-p25-qDokIO26NobM0rI8PYktCplpzEVu9i.png"
+    },
+    {
+      "book": "_OceanofPDF.com_Alchemy_The_Dark_Art_and_Curious_Science_of_Creating_Magic_in_Brands_Business_and_Life_-_Rory_Sutherland.pdf",
+      "page": 85,
+      "caption": "Sutherland: Why logic is not enough - the case for psycho-logic",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-40-_OceanofPDF.com_Alchemy_The_Dark_Art_and_Curious_Science_of_Creating_Magic_in_Brands_Business_and_Life_-_Rory_Sutherland-p85-a27ux01D1cNWrAgnRGhFp1HzDZHU6Z.png"
+    }
+  ],
+  "41": [
+    {
+      "book": "predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724.pdf",
+      "page": 225,
+      "caption": "Dan Ariely: The paradox of choice and decision paralysis",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-41-predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724-p225-LGAx7P9Ag2HnD8JeVy2IcnKfBY4x3G.png"
+    },
+    {
+      "book": "The_Choice_Factory_-_Richard_Shotton.pdf",
+      "page": 60,
+      "caption": "Richard Shotton: Choice overload in consumer decisions",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-41-The_Choice_Factory_-_Richard_Shotton-p60-3o50Sk7hwXPcSeAKhUpfzsXAZMII4k.png"
+    }
+  ],
+  "42": [
+    {
+      "book": "behave-the-biology-of-humans-at-our-best-and-worst-9781594205071-9780735222786-1594205078-9780099575061-009957506x.pdf",
+      "page": 30,
+      "caption": "Robert Sapolsky: Behavioral biology and decision-making",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-42-behave-the-biology-of-humans-at-our-best-and-worst-9781594205071-9780735222786-1594205078-9780099575061-009957506x-p30-ro7iy2w6kru2FZpFokaLYlOxvnWSnq.png"
+    },
+    {
+      "book": "behave-the-biology-of-humans-at-our-best-and-worst-9781594205071-9780735222786-1594205078-9780099575061-009957506x.pdf",
+      "page": 65,
+      "caption": "Sapolsky: The neuroscience behind consumer behavior",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-42-behave-the-biology-of-humans-at-our-best-and-worst-9781594205071-9780735222786-1594205078-9780099575061-009957506x-p65-A7FPvTnYi56dBPyCU6tbFgtIz2Q42a.png"
+    }
+  ],
+  "43": [
+    {
+      "book": "950728360-Kumar-Et-Al-2024-Generative-Ai-in-Marketing-Promises-Perils-and-Public-Policy-Implications.pdf",
+      "page": 8,
+      "caption": "Kumar et al: AI disclosure effects on consumer trust and behavior",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-43-950728360-Kumar-Et-Al-2024-Generative-Ai-in-Marketing-Promises-Perils-and-Public-Policy-Implications-p8-sJaQRcQAOLsdu0WHVCl0u5cgBKjNMk.png"
+    },
+    {
+      "book": "Manipulating Large Language Models to Increase Product Visibility.pdf",
+      "page": 5,
+      "caption": "Research: How AI systems influence product visibility and choice",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-43-Manipulating%20Large%20Language%20Models%20to%20Increase%20Product%20Visibility-p5-apbI4C62N6vUvsYHzDnXxALFap3IFM.png"
+    }
+  ],
+  "44": [
+    {
+      "book": "ScientificAdvertising.pdf",
+      "page": 15,
+      "caption": "Claude Hopkins: Scientific Advertising - testing and measurement principles",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-44-ScientificAdvertising-p15-POJrXgOMPSgsQju3AlWhg2f77ZqIfy.png"
+    },
+    {
+      "book": "ScientificAdvertising.pdf",
+      "page": 30,
+      "caption": "Hopkins: The science of headlines and copy testing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-44-ScientificAdvertising-p30-g2qfs9PYZ8PbCLjge69HVVb0hsWVtG.png"
+    }
+  ],
+  "45": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 450,
+      "caption": "Robert Cialdini: The unity principle - shared identity and influence",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-45-Influence_-_Robert_B_Cialdini-p450-UmLuK9GpfC7DD3PPcJVUOhJeopvrQf.png"
+    },
+    {
+      "book": "Six_Degrees_of_Social_Influence_-_Douglas_T_Kenrick.pdf",
+      "page": 15,
+      "caption": "Social influence: How shared identity drives behavior",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-45-Six_Degrees_of_Social_Influence_-_Douglas_T_Kenrick-p15-vUmY2eimqZDC07dfxKuL2pHX9HFFn6.png"
+    }
+  ],
+  "46": [
+    {
+      "book": "predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724.pdf",
+      "page": 12,
+      "caption": "Dan Ariely: The truth about relativity in pricing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-46-predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724-p12-LBnq34F4bwCDBhO78DJcW0bfuGzVj6.png"
+    },
+    {
+      "book": "nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526.pdf",
+      "page": 100,
+      "caption": "Thaler & Sunstein: Behavioral pricing and mental accounting",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-46-nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526-p100-hpHw40OLVQ0NZzvMu0AWP4qHs2gz74.png"
+    }
+  ],
+  "47": [
+    {
+      "book": "Influence_-_Robert_B_Cialdini.pdf",
+      "page": 167,
+      "caption": "Robert Cialdini: The liking principle in persuasion",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-47-Influence_-_Robert_B_Cialdini-p167-vBdhZcDwmKHiRjfI0tY6Nd5mL3dmb4.png"
+    },
+    {
+      "book": "The_Illusion_of_Choice_-_Richard_Shotton.pdf",
+      "page": 115,
+      "caption": "Richard Shotton: The liking bias in brand preference",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-47-The_Illusion_of_Choice_-_Richard_Shotton-p115-Xq9D8UeezEVBvSAvdBWZFPdkfYsvP1.png"
+    }
+  ],
+  "48": [
+    {
+      "book": "651599331-Attention-and-Effort-Experimental-Psychology-Daniel-Kahneman-Z-Library.pdf",
+      "page": 20,
+      "caption": "Kahneman: Cognitive load and attention capacity limits",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-48-651599331-Attention-and-Effort-Experimental-Psychology-Daniel-Kahneman-Z-Library-p20-6OI2FYhYAvTwXcMPHvcHc4oFDcMRDd.png"
+    },
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 37,
+      "caption": "Kahneman: Cognitive load theory and System 1 processing",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-48-Daniel-Kahneman-Thinking-Fast-and-Slow--p37-J9Ax2UttX7UEnMgMZBtF0H8lXyRw3i.png"
+    }
+  ],
+  "49": [
+    {
+      "book": "Availability- A Heuristic for Judging Frequency and Probability.pdf",
+      "page": 5,
+      "caption": "Tversky & Kahneman: The availability heuristic research",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-49-Availability-%20A%20Heuristic%20for%20Judging%20Frequency%20and%20Probability-p5-DbAVQ17eJGzWACCqIkQU5C3DgYX8Za.png"
+    },
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 130,
+      "caption": "Kahneman: Availability bias in frequency and probability judgments",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-49-Daniel-Kahneman-Thinking-Fast-and-Slow--p130-rCROamX8nhzMxClYW8amtHZu9gIAl5.png"
+    }
+  ],
+  "50": [
+    {
+      "book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf",
+      "page": 305,
+      "caption": "Kahneman: Status quo bias and the endowment effect",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-50-Daniel-Kahneman-Thinking-Fast-and-Slow--p305-fbs5sSUOOQjDp9LXPxvijsGbaVEG7F.png"
+    },
+    {
+      "book": "nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526.pdf",
+      "page": 50,
+      "caption": "Thaler & Sunstein: Status quo bias and default effects",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-50-nudge-the-final-edition-2021008635-2021008636-9780143137009-9780525508526-p50-SIij7RAXv2dDJNUvOUQiTHbVx4hVdE.png"
+    }
+  ],
+  "51": [
+    {
+      "book": "predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724.pdf",
+      "page": 168,
+      "caption": "Dan Ariely: The IKEA effect - why labor leads to love",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-51-predictably-irrational-the-hidden-forces-that-shape-our-decisions-9780061958724-p168-7RvNporSLXBgQ2TLVXo7tXQD0W3Vyt.png"
+    },
+    {
+      "book": "Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut.pdf",
+      "page": 165,
+      "caption": "Harhut: The IKEA effect in marketing engagement",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-51-Using_Behavioral_Science_in_Marketing_Drive_Customer_Action_and_Loyalty_by_Prompting_Instinctive_Responses_Nancy_Harhut-p165-vxJxqOPyvdeZeUXAofAuo6Jt8h4rxW.png"
+    }
+  ],
+  "52": [
+    {
+      "book": "SYS1-long-and-short-of-it.pdf",
+      "page": 80,
+      "caption": "Binet & Field: Comprehensive summary of effectiveness principles",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-52-SYS1-long-and-short-of-it-p80-90mDFkjb3PFaiLV9JvajgB6ajQCB86.png"
+    },
+    {
+      "book": "Effectiveness_In_Context.pdf",
+      "page": 130,
+      "caption": "Binet & Field: Final conclusions on marketing effectiveness",
+      "imageUrl": "https://upxfsgqqktcfvhpc.public.blob.vercel-storage.com/book-pages/week-52-Effectiveness_In_Context-p130-YCyhMYwAggxwSoWkBXGvb8NdKSs0UR.png"
+    }
+  ]
+}
