@@ -52,9 +52,11 @@ STRUCTURE:
 INLINE RESEARCH CHARTS/FIGURES:
 - You will be provided with a list of AVAILABLE CHARTS AND FIGURES (cropped from Mohamed's actual research library)
 - Select 1-2 of the most relevant charts or figures to embed inline within the article
+- CRITICAL RULE: Only select a chart if the article text EXPLICITLY discusses the specific data or example shown in that chart. If a chart shows a McDonald's case study, the article MUST mention McDonald's. If a chart shows a specific experiment, the article MUST describe that experiment. The reader must be able to look at the chart and immediately understand why it is there based on the preceding paragraph.
+- If none of the available charts directly match what the article discusses, return an EMPTY sectionImages array []. It is better to have no chart than an irrelevant one.
 - Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1) and "bookPageIndex" (the index number from the available list, starting from 0)
-- Place each chart RIGHT AFTER the paragraph that discusses the specific research finding shown in that chart
-- The chart should visually reinforce the point being made in the preceding paragraph
+- Place each chart RIGHT AFTER the paragraph that explicitly discusses the data shown in that chart
+- Write the preceding paragraph so it references the specific finding visualized in the chart (e.g. "As shown in Figure X..." or "The McDonald's case study illustrates...")
 
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {
@@ -64,7 +66,7 @@ FORMAT YOUR RESPONSE AS JSON with these exact keys:
   "teaserPost": "200-300 word LinkedIn feed post written as flowing, connected paragraphs (NOT isolated single sentences). Write it like a mini-essay that tells a story: start with a surprising hook paragraph (2-3 sentences), then a paragraph explaining the research finding that connects logically to the hook, then a paragraph with the practical implication. Each paragraph should flow naturally into the next. Use line breaks between paragraphs, NOT between every sentence. End with a CTA like 'Full article in the comments' or 'Link in comments'.",
   "twitterPost": "280 character max tweet with a specific number or finding that provokes curiosity",
   "hashtags": ["#HumanPsychologyAndMarketing", "plus 5 more relevant hashtags"],
-  "thumbnailConcept": "A specific, concrete visual metaphor for this topic. Describe a SCENE, not abstract concepts. Example: 'A single chess piece standing on a vast empty board with dramatic lighting from the left, photographed from a low angle' or 'An hourglass where the top half contains colorful brand logos dissolving into gray sand in the bottom half'. Must be a single concrete image, not a collage. ABSOLUTELY NO TEXT, WORDS, LETTERS, NUMBERS, OR TYPOGRAPHY IN THE IMAGE.",
+  "thumbnailConcept": "A specific, concrete visual metaphor that captures the CENTRAL TENSION or SURPRISING INSIGHT of THIS specific article (not just the general topic). The image should make someone stop scrolling and think 'what is this about?'. BAD example for a brand-building article: 'a clock' (too generic, could be about anything). GOOD example for a brand-building vs short-term article: 'A small seedling growing through cracked concrete next to withered cut flowers in a glass vase, photographed from ground level with morning light'. The metaphor must reflect the article's specific argument. Describe a SCENE with camera angle, lighting, subject, and mood. Must be a single concrete image, not a collage. ABSOLUTELY NO TEXT, WORDS, LETTERS, NUMBERS, OR TYPOGRAPHY IN THE IMAGE.",
   "sectionImages": [
     {
       "afterParagraph": 3,
