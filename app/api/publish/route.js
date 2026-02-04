@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { linkedinPost, twitterPost, hashtags } = await request.json();
+    const { linkedinPost, twitterPost, hashtags, imageUrl } = await request.json();
 
     const lateApiKey = process.env.LATE_API_KEY;
     const linkedinAccountId = process.env.LATE_LINKEDIN_ACCOUNT_ID;
@@ -42,18 +42,25 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
+    const postBody = {
+      content: linkedinPost || twitterPost,
+      platforms,
+      publishNow: false,
+      hashtags: hashtags || [],
+    };
+
+    // Include image in post if available
+    if (imageUrl) {
+      postBody.media = [{ url: imageUrl, type: 'image' }];
+    }
+
     const response = await fetch('https://getlate.dev/api/v1/posts', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lateApiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        content: linkedinPost || twitterPost,
-        platforms,
-        publishNow: false,
-        hashtags: hashtags || []
-      })
+      body: JSON.stringify(postBody)
     });
 
     if (!response.ok) {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
 import { getWeekData } from '../../lib/calendar';
 import researchBriefs from '../../lib/research-briefs.json';
 
@@ -112,6 +113,44 @@ Remember: NO em-dashes. Use commas or periods instead.`;
     const jsonMatch = textContent.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
+
+      // Generate header image with DALL-E 3
+      if (parsed.thumbnailConcept && process.env.OPENAI_API_KEY) {
+        try {
+          const imagePrompt = `Professional, modern LinkedIn article header image. ${parsed.thumbnailConcept}. Clean, minimalist style with subtle gradients and abstract shapes. No text, no words, no letters in the image.`;
+
+          const imgRes = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'dall-e-3',
+              prompt: imagePrompt,
+              n: 1,
+              size: '1792x1024',
+              quality: 'standard',
+            }),
+          });
+
+          const imgData = await imgRes.json();
+          const dalleUrl = imgData.data?.[0]?.url;
+
+          if (dalleUrl) {
+            // Save to Vercel Blob for permanent storage (DALL-E URLs expire in ~1hr)
+            const imgDownload = await fetch(dalleUrl);
+            const imgBuffer = await imgDownload.arrayBuffer();
+            const blob = await put(`images/week-${week}.png`, Buffer.from(imgBuffer), {
+              access: 'public',
+              contentType: 'image/png',
+            });
+            parsed.imageUrl = blob.url;
+          }
+        } catch (imgError) {
+          console.error('Image generation failed (non-blocking):', imgError);
+        }
+      }
 
       // Auto-save to blob storage
       try {

@@ -169,7 +169,8 @@ export default function Dashboard() {
         body: JSON.stringify({
           linkedinPost: generatedContent.teaserPost,
           twitterPost: generatedContent.twitterPost,
-          hashtags: generatedContent.hashtags
+          hashtags: generatedContent.hashtags,
+          imageUrl: generatedContent.imageUrl || null
         })
       });
 
@@ -316,7 +317,7 @@ export default function Dashboard() {
                   </p>
                   <p className="text-gray-500 text-sm mt-2">Topic: {selectedWeek?.topic}</p>
                   {isGenerating && (
-                    <p className="text-gray-400 text-xs mt-4">Grounding in research library sources</p>
+                    <p className="text-gray-400 text-xs mt-4">Grounding in research library sources + generating header image</p>
                   )}
                 </div>
               ) : generatedContent ? (
@@ -384,6 +385,31 @@ export default function Dashboard() {
                   <div className="min-h-[400px]">
                     {activeTab === 'article' && (
                       <div>
+                        {/* Generated Header Image */}
+                        {generatedContent.imageUrl && (
+                          <div className="mb-5">
+                            <img
+                              src={generatedContent.imageUrl}
+                              alt={generatedContent.title}
+                              className="w-full rounded-lg shadow-md"
+                            />
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <Image className="w-3 h-3" />
+                                AI-generated header image
+                              </span>
+                              <a
+                                href={generatedContent.imageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-500 hover:text-blue-600 flex items-center gap-1"
+                              >
+                                <Download className="w-3 h-3" />
+                                Download
+                              </a>
+                            </div>
+                          </div>
+                        )}
                         <div className="flex justify-between items-start mb-4">
                           <p className="text-gray-600 italic">{generatedContent.subtitle}</p>
                           <button
