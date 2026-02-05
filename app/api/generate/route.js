@@ -51,12 +51,14 @@ STRUCTURE:
 
 INLINE RESEARCH CHARTS/FIGURES:
 - You will be provided with a list of AVAILABLE CHARTS AND FIGURES (cropped from Mohamed's actual research library)
-- Select 1-2 of the most relevant charts or figures to embed inline within the article
-- CRITICAL RULE: Only select a chart if the article text EXPLICITLY discusses the specific data or example shown in that chart. If a chart shows a McDonald's case study, the article MUST mention McDonald's. If a chart shows a specific experiment, the article MUST describe that experiment. The reader must be able to look at the chart and immediately understand why it is there based on the preceding paragraph.
-- If none of the available charts directly match what the article discusses, return an EMPTY sectionImages array []. It is better to have no chart than an irrelevant one.
+- Select 1-2 charts that visualize concepts discussed in the article
+- RELEVANCE RULES:
+  * If a chart shows GENERAL DATA (e.g. "campaign effectiveness by duration", "SOV vs SOM relationship"), use it when the article discusses that concept
+  * If a chart shows a SPECIFIC BRAND EXAMPLE (e.g. "McDonald's budget split"), only use it if the article explicitly mentions that brand
+  * The reader should look at the chart and immediately understand how it relates to the paragraph above it
 - Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1) and "bookPageIndex" (the index number from the available list, starting from 0)
-- Place each chart RIGHT AFTER the paragraph that explicitly discusses the data shown in that chart
-- Write the preceding paragraph so it references the specific finding visualized in the chart (e.g. "As shown in Figure X..." or "The McDonald's case study illustrates...")
+- Place each chart RIGHT AFTER the paragraph that discusses the finding/concept shown in that chart
+- IMPORTANT: You MUST include at least 1 chart if any available chart shows data relevant to the article's topic. Only return empty sectionImages [] if the charts are completely unrelated to the article content.
 
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {
