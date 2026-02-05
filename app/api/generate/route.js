@@ -52,13 +52,15 @@ STRUCTURE:
 INLINE RESEARCH CHARTS/FIGURES:
 - You will be provided with a list of AVAILABLE CHARTS AND FIGURES (cropped from Mohamed's actual research library)
 - Select 1-2 charts that visualize concepts discussed in the article
+- CRITICAL PLACEMENT RULE: Look at each chart's caption carefully. Place the chart IMMEDIATELY AFTER the paragraph that discusses THE EXACT SAME study/finding shown in the chart.
+  * Example: If a chart caption says "Kahneman: real estate agents anchoring study", place it ONLY after your paragraph about Kahneman's real estate agents study - NOT after a paragraph about Ariely's MIT experiment or any other study
+  * The paragraph DIRECTLY BEFORE the image must describe what is shown IN that specific image
+  * If you discuss multiple studies, match each chart to its corresponding study paragraph
 - RELEVANCE RULES:
-  * If a chart shows GENERAL DATA (e.g. "campaign effectiveness by duration", "SOV vs SOM relationship"), use it when the article discusses that concept
-  * If a chart shows a SPECIFIC BRAND EXAMPLE (e.g. "McDonald's budget split"), only use it if the article explicitly mentions that brand
-  * The reader should look at the chart and immediately understand how it relates to the paragraph above it
-- Each sectionImage has "afterParagraph" (paragraph number after which to insert the image, counting from 1) and "bookPageIndex" (the index number from the available list, starting from 0)
-- Place each chart RIGHT AFTER the paragraph that discusses the finding/concept shown in that chart
-- IMPORTANT: You MUST include at least 1 chart if any available chart shows data relevant to the article's topic. Only return empty sectionImages [] if the charts are completely unrelated to the article content.
+  * If a chart shows GENERAL DATA (e.g. "campaign effectiveness by duration"), place it after discussing that general concept
+  * If a chart shows a SPECIFIC STUDY (e.g. "Kahneman anchoring"), place it after discussing that specific study
+- Each sectionImage has "afterParagraph" (paragraph number after which to insert, counting from 1) and "bookPageIndex" (index from available list, starting from 0)
+- IMPORTANT: Include at least 1 chart if any matches your content. Only return empty sectionImages [] if charts are completely unrelated.
 
 FORMAT YOUR RESPONSE AS JSON with these exact keys:
 {

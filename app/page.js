@@ -465,7 +465,7 @@ export default function Dashboard() {
                                         <img
                                           src={img.imageUrl}
                                           alt={img.caption}
-                                          className="w-full"
+                                          className="max-w-md mx-auto"
                                         />
                                         <p className="text-xs text-gray-600 px-3 py-2 bg-gray-50 border-t">
                                           <span className="font-medium">{img.caption}</span>
