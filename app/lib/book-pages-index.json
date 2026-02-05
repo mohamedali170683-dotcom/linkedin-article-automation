@@ -12,8 +12,8 @@
     {"book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf", "section": "visibility", "page": 284, "caption": "Daniel Kahneman: Loss aversion and prospect theory"}
   ],
   "5": [
-    {"book": "SYS1-long-and-short-of-it.pdf", "section": "visibility", "page": 28, "caption": "Binet & Field: Brand vs activation - profit, share growth, and ESOV efficiency (Figures 23-25)", "crop": [0, 10, 55, 95]},
-    {"book": "SYS1-long-and-short-of-it.pdf", "section": "visibility", "page": 40, "caption": "Binet & Field: The 60:40 budget split and sales impact over time (Figures 37-38)", "crop": [0, 25, 55, 95]}
+    {"book": "SYS1-long-and-short-of-it.pdf", "section": "visibility", "page": 28, "caption": "Binet & Field: Brand vs activation campaigns - profit growth, share growth, and ESOV efficiency by campaign duration (Figures 23-25)", "crop": [0, 10, 55, 95]},
+    {"book": "SYS1-long-and-short-of-it.pdf", "section": "visibility", "page": 35, "caption": "Binet & Field: How ESOV drives market share growth - the SOV/SOM relationship (Figure 31)", "crop": [0, 5, 55, 70]}
   ],
   "6": [
     {"book": "Daniel-Kahneman-Thinking-Fast-and-Slow-.pdf", "section": "visibility", "page": 123, "caption": "Daniel Kahneman: The anchoring effect in judgment and estimation"}
