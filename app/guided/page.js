@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import {
   ArrowLeft, ArrowRight, Check, Loader2,
-  Undo2, Image, FileText, Sparkles, RefreshCw
+  Undo2, Image, FileText, Sparkles, RefreshCw,
+  Send, Video, Mail, Copy, CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -80,6 +81,80 @@ export default function GuidedEditor() {
   const [history, setHistory] = useState([]);
   const [editedContent, setEditedContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishStatus, setPublishStatus] = useState(null);
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const publishToBeehiiv = async () => {
+    if (!selectedArticle || !editedContent) return;
+
+    setIsPublishing(true);
+    setPublishStatus(null);
+
+    try {
+      const res = await fetch('/api/publish/beehiiv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedArticle.title,
+          subtitle: selectedArticle.subtitle,
+          content: editedContent,
+          charts: selectedCharts,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setPublishStatus({ type: 'success', message: 'Published to Beehiiv as draft!' });
+      } else {
+        setPublishStatus({ type: 'error', message: data.error || 'Failed to publish' });
+      }
+    } catch (e) {
+      setPublishStatus({ type: 'error', message: e.message });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const generateVideo = async () => {
+    if (!selectedArticle || !editedContent) return;
+
+    setIsGeneratingVideo(true);
+
+    try {
+      const res = await fetch('/api/video/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedArticle.title,
+          content: editedContent,
+          charts: selectedCharts,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.videoUrl) {
+        // Open video in new tab or trigger download
+        window.open(data.videoUrl, '_blank');
+      } else {
+        alert(data.error || 'Failed to generate video');
+      }
+    } catch (e) {
+      alert('Video generation failed: ' + e.message);
+    } finally {
+      setIsGeneratingVideo(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    const fullContent = `${selectedArticle?.title}\n\n${selectedArticle?.subtitle ? selectedArticle.subtitle + '\n\n' : ''}${editedContent}`;
+    navigator.clipboard.writeText(fullContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const selectWeek = async (week) => {
     setSelectedWeek(week);
@@ -554,20 +629,57 @@ export default function GuidedEditor() {
 
                   {/* Final Actions */}
                   <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">Ready to Publish?</h4>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Copy your article content or export for LinkedIn.
-                    </p>
-                    <button
-                      onClick={() => {
-                        const fullContent = `${selectedArticle?.title}\n\n${selectedArticle?.subtitle ? selectedArticle.subtitle + '\n\n' : ''}${editedContent}`;
-                        navigator.clipboard.writeText(fullContent);
-                        alert('Article copied to clipboard!');
-                      }}
-                      className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                    >
-                      Copy to Clipboard
-                    </button>
+                    <h4 className="font-semibold text-gray-900 mb-3">Publish & Export</h4>
+
+                    <div className="space-y-3">
+                      {/* Copy to Clipboard */}
+                      <button
+                        onClick={copyToClipboard}
+                        className="w-full py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium flex items-center justify-center gap-2"
+                      >
+                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        {copied ? 'Copied!' : 'Copy for LinkedIn'}
+                      </button>
+
+                      {/* Publish to Beehiiv */}
+                      <button
+                        onClick={publishToBeehiiv}
+                        disabled={isPublishing}
+                        className="w-full py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isPublishing ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Mail className="w-4 h-4" />
+                        )}
+                        {isPublishing ? 'Publishing...' : 'Send to Newsletter'}
+                      </button>
+
+                      {/* Generate Video */}
+                      <button
+                        onClick={generateVideo}
+                        disabled={isGeneratingVideo}
+                        className="w-full py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isGeneratingVideo ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Video className="w-4 h-4" />
+                        )}
+                        {isGeneratingVideo ? 'Generating...' : 'Generate Video'}
+                      </button>
+                    </div>
+
+                    {/* Status message */}
+                    {publishStatus && (
+                      <div className={`mt-3 p-2 rounded text-sm ${
+                        publishStatus.type === 'success'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {publishStatus.message}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
