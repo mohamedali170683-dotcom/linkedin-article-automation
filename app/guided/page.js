@@ -107,9 +107,16 @@ export default function GuidedEditor() {
       const data = await res.json();
 
       if (data.success) {
-        setPublishStatus({ type: 'success', message: 'Published to Beehiiv as draft!' });
+        setPublishStatus({
+          type: 'success',
+          message: data.message || 'Published to Beehiiv as draft!',
+          webUrl: data.webUrl
+        });
       } else {
-        setPublishStatus({ type: 'error', message: data.error || 'Failed to publish' });
+        const errorMsg = data.hint
+          ? `${data.error} (${data.hint})`
+          : data.error || 'Failed to publish';
+        setPublishStatus({ type: 'error', message: errorMsg });
       }
     } catch (e) {
       setPublishStatus({ type: 'error', message: e.message });
@@ -155,11 +162,35 @@ export default function GuidedEditor() {
     }
   };
 
-  const copyToClipboard = () => {
+  const [copiedTeaser, setCopiedTeaser] = useState(false);
+
+  const copyFullArticle = () => {
     const fullContent = `${selectedArticle?.title}\n\n${selectedArticle?.subtitle ? selectedArticle.subtitle + '\n\n' : ''}${editedContent}`;
     navigator.clipboard.writeText(fullContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyLinkedInTeaser = () => {
+    // Create a short teaser for LinkedIn that drives to newsletter
+    const paragraphs = editedContent.split('\n\n').filter(p => p.trim());
+    const hook = paragraphs[0]?.replace(/\*\*/g, '') || '';
+    const secondPara = paragraphs[1]?.replace(/\*\*/g, '') || '';
+
+    // Build teaser post
+    const teaser = `${hook}
+
+${secondPara.length > 200 ? secondPara.substring(0, 200) + '...' : secondPara}
+
+Want the full breakdown with research citations and data?
+
+Read the complete article on my newsletter (link in comments)
+
+#BehavioralScience #Marketing #ConsumerPsychology`;
+
+    navigator.clipboard.writeText(teaser);
+    setCopiedTeaser(true);
+    setTimeout(() => setCopiedTeaser(false), 2000);
   };
 
   const selectWeek = async (week) => {
@@ -638,27 +669,43 @@ export default function GuidedEditor() {
                     <h4 className="font-semibold text-gray-900 mb-3">Publish & Export</h4>
 
                     <div className="space-y-3">
-                      {/* Copy to Clipboard */}
-                      <button
-                        onClick={copyToClipboard}
-                        className="w-full py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium flex items-center justify-center gap-2"
-                      >
-                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copied ? 'Copied!' : 'Copy for LinkedIn'}
-                      </button>
+                      {/* Step 1: Publish to Newsletter */}
+                      <div className="pb-3 border-b border-blue-200">
+                        <p className="text-xs text-gray-500 mb-2 font-medium">Step 1: Publish Article</p>
+                        <button
+                          onClick={publishToBeehiiv}
+                          disabled={isPublishing}
+                          className="w-full py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {isPublishing ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Mail className="w-4 h-4" />
+                          )}
+                          {isPublishing ? 'Publishing...' : 'Send to Newsletter'}
+                        </button>
+                      </div>
 
-                      {/* Publish to Beehiiv */}
+                      {/* Step 2: Copy LinkedIn Teaser */}
+                      <div className="pb-3 border-b border-blue-200">
+                        <p className="text-xs text-gray-500 mb-2 font-medium">Step 2: Promote on LinkedIn</p>
+                        <button
+                          onClick={copyLinkedInTeaser}
+                          className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2"
+                        >
+                          {copiedTeaser ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          {copiedTeaser ? 'Teaser Copied!' : 'Copy LinkedIn Teaser'}
+                        </button>
+                        <p className="text-xs text-gray-400 mt-1">Short post with link to newsletter</p>
+                      </div>
+
+                      {/* Optional: Copy Full Article */}
                       <button
-                        onClick={publishToBeehiiv}
-                        disabled={isPublishing}
-                        className="w-full py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                        onClick={copyFullArticle}
+                        className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm flex items-center justify-center gap-2"
                       >
-                        {isPublishing ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Mail className="w-4 h-4" />
-                        )}
-                        {isPublishing ? 'Publishing...' : 'Send to Newsletter'}
+                        {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        {copied ? 'Copied!' : 'Copy Full Article'}
                       </button>
 
                       {/* Generate Video */}
@@ -678,12 +725,22 @@ export default function GuidedEditor() {
 
                     {/* Status message */}
                     {publishStatus && (
-                      <div className={`mt-3 p-2 rounded text-sm ${
+                      <div className={`mt-3 p-3 rounded text-sm ${
                         publishStatus.type === 'success'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {publishStatus.message}
+                        <p>{publishStatus.message}</p>
+                        {publishStatus.webUrl && (
+                          <a
+                            href={publishStatus.webUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-700 underline text-xs mt-1 block"
+                          >
+                            View article on Beehiiv →
+                          </a>
+                        )}
                       </div>
                     )}
 
