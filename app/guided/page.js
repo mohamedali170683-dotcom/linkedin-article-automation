@@ -118,10 +118,13 @@ export default function GuidedEditor() {
     }
   };
 
+  const [videoResult, setVideoResult] = useState(null);
+
   const generateVideo = async () => {
     if (!selectedArticle || !editedContent) return;
 
     setIsGeneratingVideo(true);
+    setVideoResult(null);
 
     try {
       const res = await fetch('/api/video/generate', {
@@ -136,9 +139,12 @@ export default function GuidedEditor() {
 
       const data = await res.json();
 
-      if (data.success && data.videoUrl) {
-        // Open video in new tab or trigger download
-        window.open(data.videoUrl, '_blank');
+      if (data.success && data.audioUrl) {
+        setVideoResult({
+          audioUrl: data.audioUrl,
+          script: data.script,
+          preview: data.videoPreview,
+        });
       } else {
         alert(data.error || 'Failed to generate video');
       }
@@ -678,6 +684,30 @@ export default function GuidedEditor() {
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {publishStatus.message}
+                      </div>
+                    )}
+
+                    {/* Video Result */}
+                    {videoResult && (
+                      <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                        <p className="text-sm font-medium text-purple-800 mb-2">
+                          Audio Narration Ready!
+                        </p>
+                        <audio
+                          controls
+                          src={videoResult.audioUrl}
+                          className="w-full mb-2"
+                        />
+                        <a
+                          href={videoResult.audioUrl}
+                          download="narration.mp3"
+                          className="text-xs text-purple-600 hover:text-purple-800 underline"
+                        >
+                          Download MP3
+                        </a>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {videoResult.preview?.sceneCount} scenes, {videoResult.preview?.estimatedDuration}
+                        </p>
                       </div>
                     )}
                   </div>
