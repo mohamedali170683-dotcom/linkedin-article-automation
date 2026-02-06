@@ -113,9 +113,11 @@ export default function GuidedEditor() {
           webUrl: data.webUrl
         });
       } else {
-        const errorMsg = data.hint
-          ? `${data.error} (${data.hint})`
-          : data.error || 'Failed to publish';
+        let errorMsg = data.error || 'Failed to publish';
+        if (data.hint) errorMsg += ` (${data.hint})`;
+        if (data.details) {
+          console.error('Beehiiv API details:', data.details);
+        }
         setPublishStatus({ type: 'error', message: errorMsg });
       }
     } catch (e) {
