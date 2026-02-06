@@ -476,9 +476,32 @@ export default function GuidedEditor() {
                       {selectedArticle?.subtitle && (
                         <p className="text-gray-600 italic mb-6">{selectedArticle.subtitle}</p>
                       )}
-                      <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                        {editedContent}
-                      </div>
+
+                      {/* Render content with charts inserted */}
+                      {(() => {
+                        const paragraphs = editedContent.split('\n\n').filter(p => p.trim());
+                        const chartInsertPoints = selectedCharts.length > 0
+                          ? selectedCharts.map((_, i) => Math.floor((i + 1) * paragraphs.length / (selectedCharts.length + 1)))
+                          : [];
+
+                        return paragraphs.map((para, idx) => (
+                          <div key={idx}>
+                            <p className="text-gray-800 leading-relaxed mb-4 whitespace-pre-wrap">{para}</p>
+                            {chartInsertPoints.includes(idx) && (
+                              <div className="my-6">
+                                <img
+                                  src={selectedCharts[chartInsertPoints.indexOf(idx)]?.imageUrl}
+                                  alt={selectedCharts[chartInsertPoints.indexOf(idx)]?.caption}
+                                  className="max-w-md mx-auto rounded-lg border shadow-sm"
+                                />
+                                <p className="text-xs text-gray-500 text-center mt-2 italic">
+                                  {selectedCharts[chartInsertPoints.indexOf(idx)]?.caption}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ));
+                      })()}
                     </div>
                   )}
                 </div>
