@@ -229,12 +229,18 @@ export default function Dashboard() {
                 <p className="text-gray-500">Human Psychology & Marketing - 52-Week System</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-600">Current: Week {currentWeek}</span>
-              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                Auto-runs Mondays 9AM
-              </span>
+            <div className="flex items-center gap-3 text-sm">
+              <a
+                href="/guided"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Guided Editor
+              </a>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-600">Week {currentWeek}</span>
+              </div>
               {savedWeeks.size > 0 && (
                 <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                   {savedWeeks.size} saved
