@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, ChevronDown, Loader2,
-  RotateCcw, Undo2, Redo2, Image, FileText, Sparkles,
-  BookOpen, CheckCircle2, Edit3, RefreshCw
+  ArrowLeft, ArrowRight, Check, Loader2,
+  Undo2, Image, FileText, Sparkles, RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -65,81 +64,33 @@ const WEEKLY_CALENDAR = [
 ];
 
 const STEPS = [
-  { id: 'opening', label: 'Opening', description: 'Hook & introduction' },
-  { id: 'research', label: 'Research', description: 'Key findings & data' },
-  { id: 'charts', label: 'Charts', description: 'Select visuals' },
-  { id: 'body', label: 'Body', description: 'Main arguments' },
-  { id: 'conclusion', label: 'Conclusion', description: 'Wrap-up & CTA' },
-  { id: 'metadata', label: 'Finalize', description: 'Title & social' },
+  { id: 'style', label: 'Choose Style', description: 'Pick your article tone & approach' },
+  { id: 'images', label: 'Select Images', description: 'Choose charts to include' },
+  { id: 'preview', label: 'Preview & Edit', description: 'Review and finalize' },
 ];
 
 export default function GuidedEditor() {
   const [selectedWeek, setSelectedWeek] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [options, setOptions] = useState([]);
-  const [article, setArticle] = useState({
-    opening: '',
-    research: '',
-    charts: [],
-    body: '',
-    conclusion: '',
-    title: '',
-    subtitle: '',
-    teaserPost: '',
-    twitterPost: '',
-    hashtags: [],
-    thumbnailConcept: '',
-  });
+  const [articleOptions, setArticleOptions] = useState([]);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [selectedCharts, setSelectedCharts] = useState([]);
   const [availableCharts, setAvailableCharts] = useState([]);
   const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [editMode, setEditMode] = useState(null);
-  const [customText, setCustomText] = useState('');
-
-  // Save to history when article changes
-  const saveToHistory = (newArticle) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(JSON.parse(JSON.stringify(newArticle)));
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
-
-  const undo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      setArticle(JSON.parse(JSON.stringify(history[historyIndex - 1])));
-    }
-  };
-
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      setArticle(JSON.parse(JSON.stringify(history[historyIndex + 1])));
-    }
-  };
+  const [editedContent, setEditedContent] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const selectWeek = async (week) => {
     setSelectedWeek(week);
     setCurrentStep(0);
-    setArticle({
-      opening: '',
-      research: '',
-      charts: [],
-      body: '',
-      conclusion: '',
-      title: '',
-      subtitle: '',
-      teaserPost: '',
-      twitterPost: '',
-      hashtags: [],
-      thumbnailConcept: '',
-    });
+    setArticleOptions([]);
+    setSelectedArticle(null);
+    setSelectedCharts([]);
     setHistory([]);
-    setHistoryIndex(-1);
-    setOptions([]);
+    setEditedContent('');
 
-    // Load available charts for this week
+    // Load available charts
     try {
       const res = await fetch(`/api/guided/charts?week=${week.week}`);
       const data = await res.json();
@@ -149,28 +100,21 @@ export default function GuidedEditor() {
     }
   };
 
-  const generateOptions = async () => {
+  const generateArticleOptions = async () => {
     if (!selectedWeek) return;
-
     setIsGenerating(true);
-    setOptions([]);
+    setArticleOptions([]);
 
     try {
-      const stepId = STEPS[currentStep].id;
-      const res = await fetch('/api/guided/generate', {
+      const res = await fetch('/api/guided/articles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          week: selectedWeek.week,
-          step: stepId,
-          article,
-          availableCharts,
-        }),
+        body: JSON.stringify({ week: selectedWeek.week }),
       });
 
       const data = await res.json();
       if (data.options) {
-        setOptions(data.options);
+        setArticleOptions(data.options);
       }
     } catch (e) {
       console.error('Generation failed:', e);
@@ -179,106 +123,78 @@ export default function GuidedEditor() {
     }
   };
 
-  const selectOption = (option) => {
-    const stepId = STEPS[currentStep].id;
-    const newArticle = { ...article };
+  const selectArticleOption = (option) => {
+    setSelectedArticle(option);
+    setEditedContent(option.content);
+    setHistory([option.content]);
+    setCurrentStep(1); // Move to images step
+  };
 
-    if (stepId === 'charts') {
-      newArticle.charts = option.charts || [];
-    } else if (stepId === 'metadata') {
-      newArticle.title = option.title || '';
-      newArticle.subtitle = option.subtitle || '';
-      newArticle.teaserPost = option.teaserPost || '';
-      newArticle.twitterPost = option.twitterPost || '';
-      newArticle.hashtags = option.hashtags || [];
-      newArticle.thumbnailConcept = option.thumbnailConcept || '';
+  const toggleChart = (chart) => {
+    const isSelected = selectedCharts.some(c => c.imageUrl === chart.imageUrl);
+    if (isSelected) {
+      setSelectedCharts(selectedCharts.filter(c => c.imageUrl !== chart.imageUrl));
     } else {
-      newArticle[stepId] = option.content || option;
-    }
-
-    setArticle(newArticle);
-    saveToHistory(newArticle);
-    setOptions([]);
-    setEditMode(null);
-  };
-
-  const saveCustomEdit = () => {
-    const stepId = STEPS[currentStep].id;
-    const newArticle = { ...article, [stepId]: customText };
-    setArticle(newArticle);
-    saveToHistory(newArticle);
-    setEditMode(null);
-    setCustomText('');
-  };
-
-  const nextStep = () => {
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-      setOptions([]);
+      setSelectedCharts([...selectedCharts, chart]);
     }
   };
 
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      setOptions([]);
+  const undo = () => {
+    if (history.length > 1) {
+      const newHistory = history.slice(0, -1);
+      setHistory(newHistory);
+      setEditedContent(newHistory[newHistory.length - 1]);
     }
   };
 
-  const getFullArticle = () => {
-    const parts = [];
-    if (article.opening) parts.push(article.opening);
-    if (article.research) parts.push(article.research);
-    if (article.body) parts.push(article.body);
-    if (article.conclusion) parts.push(article.conclusion);
-    return parts.join('\n\n');
+  const saveEdit = (newContent) => {
+    setEditedContent(newContent);
+    setHistory([...history, newContent]);
+    setIsEditing(false);
+  };
+
+  const goToPreview = () => {
+    setCurrentStep(2);
   };
 
   const weekData = selectedWeek ? WEEKLY_CALENDAR.find(w => w.week === selectedWeek.week) : null;
+
+  // Calculate word count
+  const wordCount = editedContent ? editedContent.split(/\s+/).filter(Boolean).length : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-gray-500 hover:text-gray-700">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Guided Article Editor</h1>
-              <p className="text-sm text-gray-500">Collaborate with AI step-by-step</p>
+              <h1 className="text-xl font-semibold text-gray-900">Guided Editor</h1>
+              <p className="text-sm text-gray-500">Choose style → Select images → Preview</p>
             </div>
           </div>
 
-          {selectedWeek && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={undo}
-                disabled={historyIndex <= 0}
-                className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-30"
-                title="Undo"
-              >
-                <Undo2 className="w-5 h-5" />
-              </button>
-              <button
-                onClick={redo}
-                disabled={historyIndex >= history.length - 1}
-                className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-30"
-                title="Redo"
-              >
-                <Redo2 className="w-5 h-5" />
-              </button>
-            </div>
+          {selectedArticle && (
+            <button
+              onClick={undo}
+              disabled={history.length <= 1}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-30 border rounded-lg"
+              title="Undo"
+            >
+              <Undo2 className="w-4 h-4" /> Undo
+            </button>
           )}
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-5xl mx-auto p-6">
         {!selectedWeek ? (
           /* Week Selection */
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-lg font-semibold mb-4">Select a Week to Begin</h2>
+            <h2 className="text-lg font-semibold mb-4">Select a Week</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {WEEKLY_CALENDAR.map((week) => (
                 <button
@@ -293,324 +209,346 @@ export default function GuidedEditor() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-6">
-            {/* Left: Steps & Options */}
-            <div className="col-span-2 space-y-6">
-              {/* Topic Header */}
-              <div className="bg-white rounded-xl shadow-sm border p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-gray-500">Week {selectedWeek.week}</div>
-                    <h2 className="text-xl font-semibold text-gray-900">{weekData?.topic}</h2>
-                    <div className="text-sm text-gray-500">Sources: {weekData?.sources}</div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedWeek(null)}
-                    className="text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    Change week
-                  </button>
+          <div className="space-y-6">
+            {/* Topic Header */}
+            <div className="bg-white rounded-xl shadow-sm border p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-500">Week {selectedWeek.week}</div>
+                  <h2 className="text-xl font-semibold text-gray-900">{weekData?.topic}</h2>
+                  <div className="text-sm text-gray-500">Sources: {weekData?.sources}</div>
                 </div>
+                <button
+                  onClick={() => setSelectedWeek(null)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Change week
+                </button>
               </div>
+            </div>
 
-              {/* Progress Steps */}
-              <div className="bg-white rounded-xl shadow-sm border p-4">
-                <div className="flex items-center justify-between">
-                  {STEPS.map((step, idx) => (
-                    <div key={step.id} className="flex items-center">
-                      <button
-                        onClick={() => { setCurrentStep(idx); setOptions([]); }}
-                        className={`flex flex-col items-center ${
-                          idx === currentStep
-                            ? 'text-blue-600'
-                            : idx < currentStep && article[step.id]
-                              ? 'text-green-600'
-                              : 'text-gray-400'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2 ${
-                          idx === currentStep
-                            ? 'border-blue-600 bg-blue-50'
-                            : idx < currentStep && article[step.id]
-                              ? 'border-green-600 bg-green-50'
-                              : 'border-gray-300'
-                        }`}>
-                          {idx < currentStep && article[step.id] ? (
-                            <Check className="w-4 h-4" />
-                          ) : (
-                            idx + 1
-                          )}
-                        </div>
-                        <span className="text-xs mt-1 font-medium">{step.label}</span>
-                      </button>
-                      {idx < STEPS.length - 1 && (
-                        <div className={`w-12 h-0.5 mx-2 ${
-                          idx < currentStep ? 'bg-green-400' : 'bg-gray-200'
-                        }`} />
+            {/* Progress Steps */}
+            <div className="bg-white rounded-xl shadow-sm border p-4">
+              <div className="flex items-center justify-center gap-4">
+                {STEPS.map((step, idx) => (
+                  <div key={step.id} className="flex items-center">
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
+                      idx === currentStep
+                        ? 'bg-blue-100 text-blue-700'
+                        : idx < currentStep
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {idx < currentStep ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-current bg-opacity-20 flex items-center justify-center text-xs font-bold">
+                          {idx + 1}
+                        </span>
                       )}
+                      <span className="text-sm font-medium">{step.label}</span>
                     </div>
-                  ))}
-                </div>
+                    {idx < STEPS.length - 1 && (
+                      <ArrowRight className="w-4 h-4 mx-2 text-gray-300" />
+                    )}
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* Current Step Content */}
+            {/* Step 1: Choose Style */}
+            {currentStep === 0 && (
               <div className="bg-white rounded-xl shadow-sm border p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {STEPS[currentStep].label}
-                    </h3>
-                    <p className="text-sm text-gray-500">{STEPS[currentStep].description}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Choose Your Article Style</h3>
+                    <p className="text-sm text-gray-500">We'll generate 2 full article options with different approaches</p>
                   </div>
                   <button
-                    onClick={generateOptions}
+                    onClick={generateArticleOptions}
                     disabled={isGenerating}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                   >
                     {isGenerating ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : articleOptions.length > 0 ? (
+                      <RefreshCw className="w-4 h-4" />
                     ) : (
                       <Sparkles className="w-4 h-4" />
                     )}
-                    {options.length > 0 ? 'Regenerate' : 'Generate'} Options
+                    {articleOptions.length > 0 ? 'Regenerate' : 'Generate Options'}
                   </button>
                 </div>
 
-                {/* Current Selection */}
-                {article[STEPS[currentStep].id] && STEPS[currentStep].id !== 'charts' && (
-                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-green-800">Current Selection</span>
-                      <button
-                        onClick={() => {
-                          setEditMode('custom');
-                          setCustomText(article[STEPS[currentStep].id]);
-                        }}
-                        className="text-sm text-green-700 hover:text-green-900 flex items-center gap-1"
-                      >
-                        <Edit3 className="w-3 h-3" /> Edit
-                      </button>
+                {isGenerating && (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="text-center">
+                      <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" />
+                      <p className="text-gray-600">Generating 2 article options...</p>
+                      <p className="text-sm text-gray-400 mt-1">This takes about 30 seconds</p>
                     </div>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">
-                      {article[STEPS[currentStep].id]}
-                    </p>
                   </div>
                 )}
 
-                {/* Charts Step */}
-                {STEPS[currentStep].id === 'charts' && (
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                      Select which charts to include in your article. These will be placed after relevant paragraphs.
-                    </p>
+                {articleOptions.length > 0 && !isGenerating && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {articleOptions.map((option, idx) => (
+                      <div
+                        key={idx}
+                        className="border-2 rounded-xl p-5 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                        onClick={() => selectArticleOption(option)}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                            idx === 0 ? 'bg-blue-600' : 'bg-purple-600'
+                          }`}>
+                            {idx === 0 ? 'A' : 'B'}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{option.styleName}</h4>
+                            <p className="text-xs text-gray-500">{option.styleDescription}</p>
+                          </div>
+                        </div>
 
-                    {availableCharts.length === 0 ? (
-                      <p className="text-sm text-gray-500 italic">No charts available for this week.</p>
+                        <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                          <h5 className="font-medium text-gray-900 mb-1">{option.title}</h5>
+                          {option.subtitle && (
+                            <p className="text-sm text-gray-600 italic">{option.subtitle}</p>
+                          )}
+                        </div>
+
+                        <p className="text-sm text-gray-600 line-clamp-4 mb-3">
+                          {option.content.substring(0, 300)}...
+                        </p>
+
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>{option.content.split(/\s+/).length} words</span>
+                          <span className="text-blue-600 font-medium">Click to select →</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {articleOptions.length === 0 && !isGenerating && (
+                  <div className="text-center py-12 text-gray-500">
+                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Click "Generate Options" to create 2 article variations</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Select Images */}
+            {currentStep === 1 && (
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Select Charts & Images</h3>
+                    <p className="text-sm text-gray-500">Choose which visuals to include in your article</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setCurrentStep(0)}
+                      className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={goToPreview}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Continue to Preview <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {availableCharts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500">No charts available for this week</p>
+                    <button
+                      onClick={goToPreview}
+                      className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Skip to preview →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {availableCharts.map((chart, idx) => {
+                      const isSelected = selectedCharts.some(c => c.imageUrl === chart.imageUrl);
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => toggleChart(chart)}
+                          className={`relative border-2 rounded-xl overflow-hidden cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-blue-500 ring-2 ring-blue-200'
+                              : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                              <Check className="w-4 h-4 text-white" />
+                            </div>
+                          )}
+                          <img
+                            src={chart.imageUrl}
+                            alt={chart.caption}
+                            className="w-full h-40 object-contain bg-gray-50"
+                          />
+                          <div className="p-3 bg-white">
+                            <p className="text-xs text-gray-600 line-clamp-2">{chart.caption}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {selectedCharts.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>{selectedCharts.length}</strong> chart{selectedCharts.length !== 1 ? 's' : ''} selected
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Preview & Edit */}
+            {currentStep === 2 && (
+              <div className="grid grid-cols-3 gap-6">
+                {/* Main Content */}
+                <div className="col-span-2 bg-white rounded-xl shadow-sm border p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Preview & Edit</h3>
+                      <p className="text-sm text-gray-500">{wordCount} words</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setCurrentStep(1)}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                      >
+                        ← Back
+                      </button>
+                      {!isEditing && (
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                        >
+                          Edit Content
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {isEditing ? (
+                    <div className="space-y-4">
+                      <textarea
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                        className="w-full h-96 p-4 border rounded-lg font-mono text-sm"
+                      />
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => saveEdit(editedContent)}
+                          className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                          Save Changes
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditedContent(history[history.length - 1]);
+                            setIsEditing(false);
+                          }}
+                          className="px-4 py-2 border rounded-lg text-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="prose prose-lg max-w-none">
+                      <h1 className="text-2xl font-bold mb-2">{selectedArticle?.title}</h1>
+                      {selectedArticle?.subtitle && (
+                        <p className="text-gray-600 italic mb-6">{selectedArticle.subtitle}</p>
+                      )}
+                      <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                        {editedContent}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-4">
+                  {/* Selected Charts */}
+                  <div className="bg-white rounded-xl shadow-sm border p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Image className="w-4 h-4" /> Selected Charts
+                    </h4>
+                    {selectedCharts.length === 0 ? (
+                      <p className="text-sm text-gray-500">No charts selected</p>
                     ) : (
-                      <div className="grid grid-cols-2 gap-4">
-                        {availableCharts.map((chart, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => {
-                              const isSelected = article.charts.some(c => c.imageUrl === chart.imageUrl);
-                              const newCharts = isSelected
-                                ? article.charts.filter(c => c.imageUrl !== chart.imageUrl)
-                                : [...article.charts, chart];
-                              const newArticle = { ...article, charts: newCharts };
-                              setArticle(newArticle);
-                              saveToHistory(newArticle);
-                            }}
-                            className={`cursor-pointer border-2 rounded-lg overflow-hidden transition-all ${
-                              article.charts.some(c => c.imageUrl === chart.imageUrl)
-                                ? 'border-blue-500 ring-2 ring-blue-200'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                          >
+                      <div className="space-y-2">
+                        {selectedCharts.map((chart, idx) => (
+                          <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                             <img
                               src={chart.imageUrl}
-                              alt={chart.caption}
-                              className="w-full h-32 object-contain bg-gray-50"
+                              alt=""
+                              className="w-12 h-12 object-contain rounded"
                             />
-                            <div className="p-2 bg-white">
-                              <p className="text-xs text-gray-600 line-clamp-2">{chart.caption}</p>
-                              {article.charts.some(c => c.imageUrl === chart.imageUrl) && (
-                                <div className="flex items-center gap-1 mt-1 text-blue-600">
-                                  <CheckCircle2 className="w-3 h-3" />
-                                  <span className="text-xs font-medium">Selected</span>
-                                </div>
-                              )}
-                            </div>
+                            <p className="text-xs text-gray-600 flex-1 line-clamp-2">{chart.caption}</p>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                )}
 
-                {/* Edit Mode */}
-                {editMode === 'custom' && (
-                  <div className="space-y-3">
-                    <textarea
-                      value={customText}
-                      onChange={(e) => setCustomText(e.target.value)}
-                      className="w-full h-48 p-3 border rounded-lg text-sm"
-                      placeholder="Write your own content..."
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={saveCustomEdit}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => { setEditMode(null); setCustomText(''); }}
-                        className="px-4 py-2 border rounded-lg text-sm"
-                      >
-                        Cancel
-                      </button>
+                  {/* Article Info */}
+                  <div className="bg-white rounded-xl shadow-sm border p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <FileText className="w-4 h-4" /> Article Info
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Style:</span>
+                        <span className="text-gray-900">{selectedArticle?.styleName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Words:</span>
+                        <span className="text-gray-900">{wordCount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Charts:</span>
+                        <span className="text-gray-900">{selectedCharts.length}</span>
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {/* Generated Options */}
-                {options.length > 0 && !editMode && STEPS[currentStep].id !== 'charts' && (
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600 font-medium">Choose an option:</p>
-                    {options.map((option, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => selectOption(option)}
-                        className="p-4 border rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600 flex-shrink-0">
-                            {idx + 1}
-                          </div>
-                          <div className="flex-1">
-                            {STEPS[currentStep].id === 'metadata' ? (
-                              <div className="space-y-2">
-                                <p className="font-semibold text-gray-900">{option.title}</p>
-                                <p className="text-sm text-gray-600">{option.subtitle}</p>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                {option.content || option}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
+                  {/* Final Actions */}
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3">Ready to Publish?</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Copy your article content or export for LinkedIn.
+                    </p>
                     <button
                       onClick={() => {
-                        setEditMode('custom');
-                        setCustomText('');
+                        const fullContent = `${selectedArticle?.title}\n\n${selectedArticle?.subtitle ? selectedArticle.subtitle + '\n\n' : ''}${editedContent}`;
+                        navigator.clipboard.writeText(fullContent);
+                        alert('Article copied to clipboard!');
                       }}
-                      className="w-full p-3 border-2 border-dashed rounded-lg text-sm text-gray-500 hover:text-gray-700 hover:border-gray-400"
+                      className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
                     >
-                      Write my own instead
+                      Copy to Clipboard
                     </button>
                   </div>
-                )}
-
-                {/* Loading State */}
-                {isGenerating && (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
-                      <p className="text-sm text-gray-500">Generating options...</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Navigation */}
-                <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                  <button
-                    onClick={prevStep}
-                    disabled={currentStep === 0}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-30"
-                  >
-                    <ArrowLeft className="w-4 h-4" /> Previous
-                  </button>
-                  <button
-                    onClick={nextStep}
-                    disabled={currentStep === STEPS.length - 1}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-30"
-                  >
-                    Next <ArrowRight className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Right: Preview */}
-            <div className="space-y-4">
-              <div className="bg-white rounded-xl shadow-sm border p-4 sticky top-6">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4" /> Article Preview
-                </h3>
-
-                {article.title && (
-                  <h4 className="font-bold text-lg text-gray-900 mb-1">{article.title}</h4>
-                )}
-                {article.subtitle && (
-                  <p className="text-sm text-gray-600 mb-3 italic">{article.subtitle}</p>
-                )}
-
-                <div className="prose prose-sm max-w-none">
-                  {article.opening && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 uppercase mb-1">Opening</p>
-                      <p className="text-gray-700 whitespace-pre-wrap line-clamp-6">{article.opening}</p>
-                    </div>
-                  )}
-
-                  {article.research && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 uppercase mb-1">Research</p>
-                      <p className="text-gray-700 whitespace-pre-wrap line-clamp-6">{article.research}</p>
-                    </div>
-                  )}
-
-                  {article.charts.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 uppercase mb-1">Charts ({article.charts.length})</p>
-                      <div className="flex gap-2">
-                        {article.charts.map((chart, idx) => (
-                          <img
-                            key={idx}
-                            src={chart.imageUrl}
-                            alt={chart.caption}
-                            className="w-16 h-16 object-contain border rounded"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {article.body && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 uppercase mb-1">Body</p>
-                      <p className="text-gray-700 whitespace-pre-wrap line-clamp-6">{article.body}</p>
-                    </div>
-                  )}
-
-                  {article.conclusion && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 uppercase mb-1">Conclusion</p>
-                      <p className="text-gray-700 whitespace-pre-wrap line-clamp-6">{article.conclusion}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Word Count */}
-                <div className="mt-4 pt-3 border-t text-xs text-gray-500">
-                  ~{getFullArticle().split(/\s+/).filter(Boolean).length} words
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
       </div>
