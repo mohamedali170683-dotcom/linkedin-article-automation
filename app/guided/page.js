@@ -86,14 +86,14 @@ export default function GuidedEditor() {
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const publishToBeehiiv = async () => {
+  const publishToKit = async () => {
     if (!selectedArticle || !editedContent) return;
 
     setIsPublishing(true);
     setPublishStatus(null);
 
     try {
-      const res = await fetch('/api/publish/beehiiv', {
+      const res = await fetch('/api/publish/kit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,14 +109,14 @@ export default function GuidedEditor() {
       if (data.success) {
         setPublishStatus({
           type: 'success',
-          message: data.message || 'Published to Beehiiv as draft!',
-          webUrl: data.webUrl
+          message: data.message || 'Published to Kit as draft!',
+          dashboardUrl: data.dashboardUrl
         });
       } else {
         let errorMsg = data.error || 'Failed to publish';
         if (data.hint) errorMsg += ` (${data.hint})`;
         if (data.details) {
-          console.error('Beehiiv API details:', data.details);
+          console.error('Kit API details:', data.details);
         }
         setPublishStatus({ type: 'error', message: errorMsg });
       }
@@ -675,16 +675,16 @@ Read the complete article on my newsletter (link in comments)
                       <div className="pb-3 border-b border-blue-200">
                         <p className="text-xs text-gray-500 mb-2 font-medium">Step 1: Publish Article</p>
                         <button
-                          onClick={publishToBeehiiv}
+                          onClick={publishToKit}
                           disabled={isPublishing}
-                          className="w-full py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                          className="w-full py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           {isPublishing ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <Mail className="w-4 h-4" />
                           )}
-                          {isPublishing ? 'Publishing...' : 'Send to Newsletter'}
+                          {isPublishing ? 'Publishing...' : 'Send to Kit Newsletter'}
                         </button>
                       </div>
 
@@ -733,14 +733,14 @@ Read the complete article on my newsletter (link in comments)
                           : 'bg-red-100 text-red-800'
                       }`}>
                         <p>{publishStatus.message}</p>
-                        {publishStatus.webUrl && (
+                        {publishStatus.dashboardUrl && (
                           <a
-                            href={publishStatus.webUrl}
+                            href={publishStatus.dashboardUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-green-700 underline text-xs mt-1 block"
                           >
-                            View article on Beehiiv →
+                            Open Kit Dashboard →
                           </a>
                         )}
                       </div>
