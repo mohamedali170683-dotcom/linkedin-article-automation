@@ -1,0 +1,454 @@
+{
+  "brandName": "Catchlight",
+  "tagline": "Where visibility meets attention",
+  "issueUnit": "Light",
+  "subscriberName": "Light Catchers",
+  "weeks": [
+    {
+      "week": 1,
+      "light": "The Visibility-Attention Gap",
+      "hook": "Your brand appears in ChatGPT. Nobody clicks. Why?",
+      "aiVisibility": "How AI search surfaces brands without user intent",
+      "attentionScience": "Mental availability vs. mere exposure",
+      "sources": ["Sharp (How Brands Grow)", "McKinsey AI Search Report 2025", "Ehrenberg-Bass"]
+    },
+    {
+      "week": 2,
+      "light": "The 11 Million Bit Filter",
+      "hook": "AI processes everything. Humans process almost nothing.",
+      "aiVisibility": "Why comprehensive AI answers overwhelm users",
+      "attentionScience": "System 1 filtering and the autopilot brain (Kahneman, Barden)",
+      "sources": ["Kahneman (Thinking Fast and Slow)", "Barden (Decoded)", "AI Overviews research"]
+    },
+    {
+      "week": 3,
+      "light": "Social Proof in the Algorithm",
+      "hook": "AI is counting your reviews. Here's what it sees.",
+      "aiVisibility": "How LLMs weight social signals in recommendations",
+      "attentionScience": "Why we trust what others trust (Cialdini)",
+      "sources": ["Cialdini (Influence)", "GEO citation research", "Perplexity ranking factors"]
+    },
+    {
+      "week": 4,
+      "light": "First Mention Wins",
+      "hook": "The first brand ChatGPT names sets the anchor. Is it you?",
+      "aiVisibility": "Position bias in AI-generated lists",
+      "attentionScience": "Anchoring effect and primacy bias",
+      "sources": ["Kahneman (anchoring)", "AI search ranking studies", "Ariely (Predictably Irrational)"]
+    },
+    {
+      "week": 5,
+      "light": "The Long Game in Instant Answers",
+      "hook": "Zero-click search rewards brands built over years, not campaigns.",
+      "aiVisibility": "Why brand building matters more in AI search",
+      "attentionScience": "The 60:40 rule and long-term memory encoding",
+      "sources": ["Binet & Field (The Long and Short)", "AI brand mention analysis"]
+    },
+    {
+      "week": 6,
+      "light": "Category Entry Points Go Digital",
+      "hook": "AI doesn't search categories. It answers situations.",
+      "aiVisibility": "How conversational queries change brand discovery",
+      "attentionScience": "Category entry points and memory retrieval",
+      "sources": ["Romaniuk (Building Distinctive Brand Assets)", "Conversational AI query research"]
+    },
+    {
+      "week": 7,
+      "light": "The Authority Signal",
+      "hook": "AI quotes experts. It ignores brands that talk like brands.",
+      "aiVisibility": "Why thought leadership content gets cited",
+      "attentionScience": "Authority principle and credibility heuristics",
+      "sources": ["Cialdini (authority)", "GEO expert content research", "E-E-A-T signals"]
+    },
+    {
+      "week": 8,
+      "light": "The Novelty Paradox",
+      "hook": "AI loves familiar sources. Humans love surprises. Now what?",
+      "aiVisibility": "Training data bias toward established content",
+      "attentionScience": "Dopamine, novelty, and attention capture",
+      "sources": ["Harhut (Using Behavioral Science)", "LLM training data analysis"]
+    },
+    {
+      "week": 9,
+      "light": "Fluency in the Machine",
+      "hook": "Simple language ranks higher. In AI and in brains.",
+      "aiVisibility": "Why plain language outperforms jargon in AI citations",
+      "attentionScience": "Processing fluency and the ease heuristic",
+      "sources": ["Kahneman (cognitive ease)", "Content readability studies", "Alter (fluency research)"]
+    },
+    {
+      "week": 10,
+      "light": "The Distinctive Asset Test",
+      "hook": "Would ChatGPT recognize your brand without your name?",
+      "aiVisibility": "Brand identifiers in AI knowledge graphs",
+      "attentionScience": "Distinctive assets and mental availability",
+      "sources": ["Romaniuk (distinctive assets)", "Brand entity recognition in LLMs"]
+    },
+    {
+      "week": 11,
+      "light": "Scarcity Doesn't Scale",
+      "hook": "AI makes everything available. Scarcity tactics are dying.",
+      "aiVisibility": "How infinite information changes persuasion",
+      "attentionScience": "Scarcity principle meets abundance psychology",
+      "sources": ["Cialdini (scarcity)", "Attention economy research"]
+    },
+    {
+      "week": 12,
+      "light": "Repetition Without Annoyance",
+      "hook": "AI surfaces your brand repeatedly. Are you building or burning?",
+      "aiVisibility": "Brand frequency in AI responses",
+      "attentionScience": "Mere exposure effect vs. wear-out",
+      "sources": ["Zajonc (mere exposure)", "Sharp (reach patterns)", "Ad frequency research"]
+    },
+    {
+      "week": 13,
+      "light": "Q1 Synthesis: The New Visibility Stack",
+      "hook": "Three months of signals. One framework for what's next.",
+      "aiVisibility": "Integrated AI visibility strategy",
+      "attentionScience": "Building cumulative mental availability",
+      "sources": ["All Q1 sources synthesized"]
+    },
+    {
+      "week": 14,
+      "light": "Pre-suasion in Pre-Search",
+      "hook": "Users form preferences before they type. AI just confirms them.",
+      "aiVisibility": "The role of brand priming before AI queries",
+      "attentionScience": "Pre-suasion and context effects",
+      "sources": ["Cialdini (Pre-suasion)", "User journey research"]
+    },
+    {
+      "week": 15,
+      "light": "Framing the AI Answer",
+      "hook": "Same facts, different frame, different brand wins.",
+      "aiVisibility": "How content framing affects AI recommendations",
+      "attentionScience": "Framing effects and loss/gain asymmetry",
+      "sources": ["Kahneman & Tversky (framing)", "Content optimization studies"]
+    },
+    {
+      "week": 16,
+      "light": "Right Brain, Left Brain, No Brain",
+      "hook": "AI has no hemispheres. Why emotional content still wins.",
+      "aiVisibility": "Emotional vs. rational content in AI citations",
+      "attentionScience": "Orlando Wood's attention research",
+      "sources": ["Orlando Wood (Lemon/Look Out)", "Emotional content performance"]
+    },
+    {
+      "week": 17,
+      "light": "The Messy Middle Gets Messier",
+      "hook": "Google's messy middle now includes AI loops. Map it or lose.",
+      "aiVisibility": "Multi-touchpoint AI discovery journeys",
+      "attentionScience": "Exploration vs. exploitation in decision-making",
+      "sources": ["Google Messy Middle research", "Decision journey mapping"]
+    },
+    {
+      "week": 18,
+      "light": "Attention is the New Reach",
+      "hook": "AI reach is infinite. Attention is still scarce.",
+      "aiVisibility": "Impression inflation in AI surfaces",
+      "attentionScience": "Attention metrics vs. exposure metrics",
+      "sources": ["Lumen attention research", "Karen Nelson-Field"]
+    },
+    {
+      "week": 19,
+      "light": "The Context Collapse",
+      "hook": "AI strips context. Your brand appears next to anyone.",
+      "aiVisibility": "Brand safety in AI-generated content",
+      "attentionScience": "Context effects on brand perception",
+      "sources": ["Brand context research", "AI content adjacency studies"]
+    },
+    {
+      "week": 20,
+      "light": "Commitment in a Zero-Click World",
+      "hook": "Users get answers without visiting. How do you build commitment?",
+      "aiVisibility": "Engagement beyond the click",
+      "attentionScience": "Commitment and consistency principle",
+      "sources": ["Cialdini (commitment)", "Zero-click search impact studies"]
+    },
+    {
+      "week": 21,
+      "light": "The Trust Transfer",
+      "hook": "Users trust ChatGPT. Does that trust transfer to brands it mentions?",
+      "aiVisibility": "Platform trust and brand halo effects",
+      "attentionScience": "Trust attribution and source credibility",
+      "sources": ["Trust research", "AI platform credibility studies"]
+    },
+    {
+      "week": 22,
+      "light": "Emotional Salience in Rational Answers",
+      "hook": "AI gives logical answers. Brands that win add emotional texture.",
+      "aiVisibility": "Content that gets cited AND remembered",
+      "attentionScience": "Emotional memory encoding",
+      "sources": ["Binet & Field (emotional advertising)", "Memory research"]
+    },
+    {
+      "week": 23,
+      "light": "The Expertise Paradox",
+      "hook": "AI democratizes expertise. Real experts stand out more.",
+      "aiVisibility": "Original research as differentiation",
+      "attentionScience": "Authority and distinctiveness",
+      "sources": ["Cialdini (authority)", "Thought leadership ROI studies"]
+    },
+    {
+      "week": 24,
+      "light": "Peak-End in AI Conversations",
+      "hook": "Users remember the last answer. Make sure it's about you.",
+      "aiVisibility": "Positioning for conversation endings",
+      "attentionScience": "Peak-end rule in experience memory",
+      "sources": ["Kahneman (peak-end)", "Conversational AI UX research"]
+    },
+    {
+      "week": 25,
+      "light": "Habit Loops for AI Search",
+      "hook": "Users build AI habits. Brands must fit inside them.",
+      "aiVisibility": "Behavioral patterns in AI tool usage",
+      "attentionScience": "Habit formation and cue-routine-reward",
+      "sources": ["Duhigg (habits)", "AI adoption behavior research"]
+    },
+    {
+      "week": 26,
+      "light": "Q2 Synthesis: The Attention Architecture",
+      "hook": "Building a system for sustained visibility and attention.",
+      "aiVisibility": "Mid-year AI visibility strategy review",
+      "attentionScience": "Integrated attention framework",
+      "sources": ["All Q2 sources synthesized"]
+    },
+    {
+      "week": 27,
+      "light": "Share of Model",
+      "hook": "SOV becomes SOM. Share of Voice becomes Share of Model.",
+      "aiVisibility": "Measuring brand presence in LLM outputs",
+      "attentionScience": "Market share and mental share correlation",
+      "sources": ["Binet (Share of Search)", "AI brand monitoring research"]
+    },
+    {
+      "week": 28,
+      "light": "The Data Moat",
+      "hook": "Proprietary data gets cited. Scraped content gets ignored.",
+      "aiVisibility": "Original research as AI citation magnet",
+      "attentionScience": "Novelty and information value",
+      "sources": ["GEO research", "Content differentiation studies"]
+    },
+    {
+      "week": 29,
+      "light": "When Brands Go Dark in AI",
+      "hook": "Stop appearing. See what happens. The data is brutal.",
+      "aiVisibility": "Brand mention decay in AI responses",
+      "attentionScience": "Memory decay and forgetting curves",
+      "sources": ["Ehrenberg-Bass (brand growth)", "AI mention persistence studies"]
+    },
+    {
+      "week": 30,
+      "light": "The GEO Playbook",
+      "hook": "SEO had 25 years. GEO has maybe 2. Here's the current playbook.",
+      "aiVisibility": "Generative Engine Optimization fundamentals",
+      "attentionScience": "Cognitive load in content consumption",
+      "sources": ["GEO research papers", "Princeton GEO study"]
+    },
+    {
+      "week": 31,
+      "light": "Citations as Currency",
+      "hook": "In AI search, being cited beats being ranked.",
+      "aiVisibility": "Citation patterns in AI-generated answers",
+      "attentionScience": "Source credibility and attribution",
+      "sources": ["AI citation research", "Academic citation influence"]
+    },
+    {
+      "week": 32,
+      "light": "The 3-Second Scan",
+      "hook": "AI answers get skimmed. Here's what eyes actually see.",
+      "aiVisibility": "Visual attention in AI interfaces",
+      "attentionScience": "Eye-tracking and attention patterns",
+      "sources": ["Lumen Research", "AI interface UX studies"]
+    },
+    {
+      "week": 33,
+      "light": "Double Jeopardy Goes Digital",
+      "hook": "Small brands suffer twice: less visible AND less remembered.",
+      "aiVisibility": "Brand size effects in AI recommendations",
+      "attentionScience": "Double jeopardy law in brand metrics",
+      "sources": ["Sharp (double jeopardy)", "AI brand bias research"]
+    },
+    {
+      "week": 34,
+      "light": "The Elasticity Question",
+      "hook": "What's the ROI of AI visibility? Here's what we know.",
+      "aiVisibility": "Measuring AI visibility impact on business outcomes",
+      "attentionScience": "Advertising elasticity principles",
+      "sources": ["Binet & Field (effectiveness)", "AI marketing attribution"]
+    },
+    {
+      "week": 35,
+      "light": "The 95-5 Rule in AI",
+      "hook": "95% aren't buying today. AI reaches all of them. Now what?",
+      "aiVisibility": "Always-on visibility for future buyers",
+      "attentionScience": "Memory and future purchase behavior",
+      "sources": ["Ehrenberg-Bass (95-5)", "Brand building research"]
+    },
+    {
+      "week": 36,
+      "light": "Reach vs. Frequency in Infinite Reach",
+      "hook": "AI provides infinite reach. Frequency still matters more.",
+      "aiVisibility": "Optimizing brand mention frequency",
+      "attentionScience": "Reach and frequency optimization",
+      "sources": ["Sharp (reach)", "Ephron (recency)", "AI exposure research"]
+    },
+    {
+      "week": 37,
+      "light": "The Attribution Illusion",
+      "hook": "You can't track what AI drove. But it drove something.",
+      "aiVisibility": "Dark funnel and unmeasurable AI influence",
+      "attentionScience": "Attribution bias and measurement limits",
+      "sources": ["Attribution research", "Dark social studies"]
+    },
+    {
+      "week": 38,
+      "light": "The Recency Trap",
+      "hook": "AI favors recent content. Evergreen still builds brands.",
+      "aiVisibility": "Content freshness vs. content quality",
+      "attentionScience": "Availability heuristic and recency bias",
+      "sources": ["Kahneman (availability)", "Content strategy research"]
+    },
+    {
+      "week": 39,
+      "light": "Q3 Synthesis: Measurement in the Age of AI",
+      "hook": "What we can measure, what we can't, and what we should do anyway.",
+      "aiVisibility": "AI visibility measurement framework",
+      "attentionScience": "Behavioral metrics that matter",
+      "sources": ["All Q3 sources synthesized"]
+    },
+    {
+      "week": 40,
+      "light": "The Alchemy of AI Optimization",
+      "hook": "Some things that shouldn't work in AI, work. That's alchemy.",
+      "aiVisibility": "Counter-intuitive AI visibility tactics",
+      "attentionScience": "Rory Sutherland's irrational effectiveness",
+      "sources": ["Sutherland (Alchemy)", "Behavioral anomalies"]
+    },
+    {
+      "week": 41,
+      "light": "Choice Overload in Infinite Options",
+      "hook": "AI can recommend everything. Users want three options.",
+      "aiVisibility": "Optimal recommendation set sizes",
+      "attentionScience": "Choice overload and decision paralysis",
+      "sources": ["Schwartz (Paradox of Choice)", "Iyengar (jam study)"]
+    },
+    {
+      "week": 42,
+      "light": "The Biology of Brand Recall",
+      "hook": "Your brand lives in neurons. AI can't replicate that. Yet.",
+      "aiVisibility": "The limits of AI influence on memory",
+      "attentionScience": "Neuroscience of brand memory",
+      "sources": ["Sapolsky (Behave)", "Neuromarketing research"]
+    },
+    {
+      "week": 43,
+      "light": "When AI Says 'Made with AI'",
+      "hook": "Disclosure changes trust. Here's how much.",
+      "aiVisibility": "AI-generated content labeling effects",
+      "attentionScience": "Transparency and trust research",
+      "sources": ["AI disclosure studies", "Trust research"]
+    },
+    {
+      "week": 44,
+      "light": "Scientific Advertising, Again",
+      "hook": "Hopkins wrote the playbook in 1923. AI is rewriting it.",
+      "aiVisibility": "Data-driven marketing in the AI era",
+      "attentionScience": "Testing and optimization principles",
+      "sources": ["Hopkins (Scientific Advertising)", "Modern testing research"]
+    },
+    {
+      "week": 45,
+      "light": "The Unity Effect",
+      "hook": "Shared identity beats shared interest. In AI and in life.",
+      "aiVisibility": "Community signals in AI recommendations",
+      "attentionScience": "Unity principle and in-group bias",
+      "sources": ["Cialdini (unity)", "Community marketing research"]
+    },
+    {
+      "week": 46,
+      "light": "Price in the AI Answer",
+      "hook": "When AI shows prices, behavioral pricing still works.",
+      "aiVisibility": "Pricing visibility in AI shopping",
+      "attentionScience": "Behavioral pricing and anchoring",
+      "sources": ["Ariely (pricing)", "Thaler (mental accounting)"]
+    },
+    {
+      "week": 47,
+      "light": "Liking the Machine",
+      "hook": "Users like ChatGPT. That liking transfers to brands it recommends.",
+      "aiVisibility": "Platform affinity effects",
+      "attentionScience": "Liking principle and association",
+      "sources": ["Cialdini (liking)", "AI UX research"]
+    },
+    {
+      "week": 48,
+      "light": "Cognitive Load in the AI Interface",
+      "hook": "AI reduces load. Brands that add load lose.",
+      "aiVisibility": "Content simplicity for AI consumption",
+      "attentionScience": "Cognitive load theory",
+      "sources": ["Sweller (cognitive load)", "UX research"]
+    },
+    {
+      "week": 49,
+      "light": "Availability in the Age of AI",
+      "hook": "What's easy to recall beats what's easy to find.",
+      "aiVisibility": "Findability vs. memorability",
+      "attentionScience": "Availability heuristic",
+      "sources": ["Kahneman & Tversky", "Brand recall research"]
+    },
+    {
+      "week": 50,
+      "light": "Status Quo in a Disrupted World",
+      "hook": "Users default to familiar brands. Even when AI suggests new ones.",
+      "aiVisibility": "Incumbency advantage in AI recommendations",
+      "attentionScience": "Status quo bias and defaults",
+      "sources": ["Kahneman (status quo)", "Brand switching research"]
+    },
+    {
+      "week": 51,
+      "light": "The IKEA Effect in Content",
+      "hook": "Content users participate in gets remembered. Even in AI.",
+      "aiVisibility": "Interactive content and AI engagement",
+      "attentionScience": "IKEA effect and effort justification",
+      "sources": ["Norton & Ariely (IKEA effect)", "Content engagement research"]
+    },
+    {
+      "week": 52,
+      "light": "Annual Synthesis: The Year in Lights",
+      "hook": "52 Lights. One coherent view of where visibility meets attention.",
+      "aiVisibility": "Full-year AI visibility evolution",
+      "attentionScience": "Integrated behavioral framework",
+      "sources": ["All year sources synthesized"]
+    }
+  ],
+  "structure": {
+    "targetLength": "450-600 words",
+    "sections": [
+      {
+        "name": "Hook",
+        "length": "1-2 sentences",
+        "purpose": "Provocative opening that creates tension"
+      },
+      {
+        "name": "The AI Reality",
+        "length": "100-150 words",
+        "purpose": "What's happening in AI visibility right now"
+      },
+      {
+        "name": "The Brain Science",
+        "length": "100-150 words",
+        "purpose": "The behavioral principle that explains why it matters"
+      },
+      {
+        "name": "The Bridge",
+        "length": "100-150 words",
+        "purpose": "Where these two worlds collide + actionable insight"
+      },
+      {
+        "name": "The Takeaway",
+        "length": "1-2 sentences",
+        "purpose": "One memorable line to carry forward"
+      }
+    ]
+  }
+}

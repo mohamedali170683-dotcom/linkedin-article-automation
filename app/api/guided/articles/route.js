@@ -1,63 +1,73 @@
 import { NextResponse } from 'next/server';
-import researchBriefs from '../../../lib/research-briefs.json';
+import catchlightCalendar from '../../../lib/catchlight-calendar.json';
 
 export async function POST(request) {
   try {
     const { week } = await request.json();
 
-    // Get research brief for this week
-    const brief = researchBriefs[String(week)];
-    if (!brief) {
+    // Get the Light topic for this week from Catchlight calendar
+    const lightData = catchlightCalendar.weeks.find(w => w.week === week);
+    if (!lightData) {
       return NextResponse.json({ error: 'Week not found' }, { status: 404 });
     }
 
-    const prompt = `You are a LinkedIn content strategist. Generate 2 COMPLETE LinkedIn articles about "${brief.topic}" using this research:
+    const prompt = `You are writing a "Light" for Catchlight, a biweekly newsletter about "where AI visibility meets the science of attention."
 
-RESEARCH BRIEF:
-${brief.brief}
+LIGHT #${week}: "${lightData.light}"
+HOOK: ${lightData.hook}
+AI VISIBILITY ANGLE: ${lightData.aiVisibility}
+ATTENTION SCIENCE ANGLE: ${lightData.attentionScience}
+SOURCES TO REFERENCE: ${lightData.sources.join(', ')}
 
-KEY QUOTES:
-${brief.keyQuotes?.join('\n') || 'N/A'}
+BRAND VOICE:
+- Sharp, confident, slightly contrarian
+- Data-driven but not dry
+- Written for marketing directors who are skeptical of hype
+- Never preachy or obvious
+- Use "you" to speak directly to the reader
 
-KEY FINDINGS:
-${brief.keyFindings?.join('\n') || 'N/A'}
+STRUCTURE (450-600 words total):
+1. HOOK (1-2 sentences): Start with the provocative statement provided. Make them stop scrolling.
+2. THE AI REALITY (100-150 words): What's actually happening in AI search/visibility right now. Be specific with data or examples.
+3. THE BRAIN SCIENCE (100-150 words): The behavioral principle that explains why this matters. Reference the research but make it accessible.
+4. THE BRIDGE (100-150 words): Where these two worlds collide. This is your unique insight - what no one else is saying.
+5. THE TAKEAWAY (1-2 sentences): One memorable line they'll remember. Make it quotable.
 
-Create 2 FULL articles with DIFFERENT styles:
+RULES:
+- NEVER use em-dashes. Use commas, periods, or "and" instead.
+- Short paragraphs (2-3 sentences max)
+- No bullet points in the body - this is prose
+- Don't start with "In today's world" or similar clichés
+- Don't end with a question - end with a statement
+- Include at least one specific data point or study reference
 
-OPTION A - "Research-Forward"
-- Lead with compelling data/statistics
-- Academic but accessible tone
-- Heavy emphasis on citing studies
-- Structure: Hook with data → Research deep-dive → Practical implications → CTA
+Generate 2 DIFFERENT versions:
 
-OPTION B - "Storytelling Approach"
-- Lead with a relatable scenario or question
-- Conversational, thought-provoking tone
-- Weave research into narrative naturally
-- Structure: Story/question hook → "Here's what research shows" → Real-world application → CTA
+VERSION A - "Sharp & Provocative"
+- More aggressive hook
+- Challenges conventional wisdom
+- Slightly edgy tone
 
-Each article should be:
-- 800-1200 words
-- Use short paragraphs (2-3 sentences max)
-- Include specific data points from the research
-- End with an engaging question or call-to-action
-- NEVER use em-dashes. Use commas, periods, or regular hyphens instead
+VERSION B - "Thoughtful & Nuanced"
+- More reflective opening
+- Acknowledges complexity
+- Warmer but still smart
 
 Return as JSON array:
 [
   {
-    "styleName": "Research-Forward",
-    "styleDescription": "Data-driven, academic yet accessible",
-    "title": "Article title here",
-    "subtitle": "Optional subtitle",
-    "content": "Full article body here..."
+    "styleName": "Sharp & Provocative",
+    "styleDescription": "Challenges conventional thinking, edgier tone",
+    "title": "Light #${week}: ${lightData.light}",
+    "subtitle": "${lightData.hook}",
+    "content": "Full Light body here (450-600 words)..."
   },
   {
-    "styleName": "Storytelling",
-    "styleDescription": "Narrative-driven, conversational",
-    "title": "Article title here",
-    "subtitle": "Optional subtitle",
-    "content": "Full article body here..."
+    "styleName": "Thoughtful & Nuanced",
+    "styleDescription": "Reflective, acknowledges complexity",
+    "title": "Light #${week}: ${lightData.light}",
+    "subtitle": "${lightData.hook}",
+    "content": "Full Light body here (450-600 words)..."
   }
 ]
 
@@ -73,7 +83,7 @@ IMPORTANT: Return ONLY valid JSON, no markdown code blocks.`;
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 8000,
+        max_tokens: 4000,
         messages: [
           { role: "user", content: prompt }
         ]
@@ -83,7 +93,7 @@ IMPORTANT: Return ONLY valid JSON, no markdown code blocks.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Anthropic API error:', errorText);
-      return NextResponse.json({ error: 'Failed to generate articles' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to generate Light' }, { status: 500 });
     }
 
     const data = await response.json();
@@ -100,10 +110,17 @@ IMPORTANT: Return ONLY valid JSON, no markdown code blocks.`;
       return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
     }
 
-    return NextResponse.json({ options });
+    return NextResponse.json({
+      options,
+      lightData: {
+        week: lightData.week,
+        light: lightData.light,
+        hook: lightData.hook
+      }
+    });
 
   } catch (error) {
-    console.error('Article generation failed:', error);
+    console.error('Light generation failed:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

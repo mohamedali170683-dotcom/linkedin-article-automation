@@ -4,70 +4,70 @@ import { useState, useEffect } from 'react';
 import {
   ArrowLeft, ArrowRight, Check, Loader2,
   Undo2, Image, FileText, Sparkles, RefreshCw,
-  Send, Video, Mail, Copy, CheckCircle
+  Send, Video, Mail, Copy, CheckCircle, Sun
 } from 'lucide-react';
 import Link from 'next/link';
 
-// 52-Week Calendar Data
-const WEEKLY_CALENDAR = [
-  { week: 1, topic: "Mental Availability", sources: "Sharp, Romaniuk" },
-  { week: 2, topic: "System 1 vs System 2", sources: "Kahneman, Shotton" },
-  { week: 3, topic: "Social Proof", sources: "Cialdini, Shotton" },
-  { week: 4, topic: "Loss Aversion", sources: "Kahneman, Thaler" },
-  { week: 5, topic: "The Long and Short of It", sources: "Binet & Field" },
-  { week: 6, topic: "Anchoring Effect", sources: "Kahneman, Ariely" },
-  { week: 7, topic: "SOV/SOM Relationship", sources: "Binet & Field, Sharp" },
-  { week: 8, topic: "Reciprocity Principle", sources: "Cialdini" },
-  { week: 9, topic: "Choice Architecture", sources: "Thaler & Sunstein" },
-  { week: 10, topic: "Distinctive Brand Assets", sources: "Romaniuk" },
-  { week: 11, topic: "Scarcity Principle", sources: "Cialdini, Shotton" },
-  { week: 12, topic: "Mere Exposure Effect", sources: "Zajonc, Sharp" },
-  { week: 13, topic: "Q1 Synthesis", sources: "Multiple sources" },
-  { week: 14, topic: "Pre-suasion", sources: "Cialdini" },
-  { week: 15, topic: "Framing Effects", sources: "Kahneman, Thaler" },
-  { week: 16, topic: "The Attention Economy", sources: "Orlando Wood" },
-  { week: 17, topic: "Category Entry Points", sources: "Romaniuk" },
-  { week: 18, topic: "The Messy Middle", sources: "Google Research" },
-  { week: 19, topic: "Neuromarketing Fundamentals", sources: "Barden" },
-  { week: 20, topic: "Commitment & Consistency", sources: "Cialdini" },
-  { week: 21, topic: "The Fluency Heuristic", sources: "Kahneman, Alter" },
-  { week: 22, topic: "Emotional vs Rational Ads", sources: "Binet & Field, Wood" },
-  { week: 23, topic: "Authority Principle", sources: "Cialdini" },
-  { week: 24, topic: "The Peak-End Rule", sources: "Kahneman" },
-  { week: 25, topic: "Habit Formation", sources: "Wood, Duhigg" },
-  { week: 26, topic: "Q2 Synthesis", sources: "Multiple sources" },
-  { week: 27, topic: "Brand Building ROI", sources: "Binet & Field" },
-  { week: 28, topic: "Mental Availability Metrics", sources: "Romaniuk, Sharp" },
-  { week: 29, topic: "When Brands Go Dark", sources: "Ehrenberg-Bass" },
-  { week: 30, topic: "GEO: Generative Engine Optimization", sources: "GEO research" },
-  { week: 31, topic: "Share of Search", sources: "Les Binet" },
-  { week: 32, topic: "The Attention Payoff", sources: "Lumen, Wood" },
-  { week: 33, topic: "Double Jeopardy Law", sources: "Sharp" },
-  { week: 34, topic: "Advertising Elasticity", sources: "Binet & Field" },
-  { week: 35, topic: "The 95-5 Rule", sources: "Ehrenberg-Bass" },
-  { week: 36, topic: "Reach vs Frequency", sources: "Sharp, Ephron" },
-  { week: 37, topic: "Marketing Effectiveness Crisis", sources: "IPA studies" },
-  { week: 38, topic: "Attribution Reality", sources: "Various" },
-  { week: 39, topic: "Q3 Synthesis", sources: "Multiple sources" },
-  { week: 40, topic: "Alchemy: Magic of Irrational", sources: "Rory Sutherland" },
-  { week: 41, topic: "Choice Overload", sources: "Schwartz, Iyengar" },
-  { week: 42, topic: "Behavioral Biology", sources: "Sapolsky" },
-  { week: 43, topic: "AI Disclosure Effects", sources: "Recent research" },
-  { week: 44, topic: "Scientific Advertising Redux", sources: "Hopkins" },
-  { week: 45, topic: "Unity Principle", sources: "Cialdini" },
-  { week: 46, topic: "Behavioral Pricing", sources: "Ariely, Thaler" },
-  { week: 47, topic: "The Liking Principle", sources: "Cialdini" },
-  { week: 48, topic: "Cognitive Load Theory", sources: "Sweller" },
-  { week: 49, topic: "Availability Heuristic", sources: "Kahneman, Tversky" },
-  { week: 50, topic: "Status Quo Bias", sources: "Kahneman, Thaler" },
-  { week: 51, topic: "The IKEA Effect", sources: "Norton, Ariely" },
-  { week: 52, topic: "Annual Synthesis", sources: "All sources" },
+// Catchlight Calendar - AI Visibility + Attention Science
+const CATCHLIGHT_CALENDAR = [
+  { week: 1, light: "The Visibility-Attention Gap", hook: "Your brand appears in ChatGPT. Nobody clicks. Why?" },
+  { week: 2, light: "The 11 Million Bit Filter", hook: "AI processes everything. Humans process almost nothing." },
+  { week: 3, light: "Social Proof in the Algorithm", hook: "AI is counting your reviews. Here's what it sees." },
+  { week: 4, light: "First Mention Wins", hook: "The first brand ChatGPT names sets the anchor. Is it you?" },
+  { week: 5, light: "The Long Game in Instant Answers", hook: "Zero-click search rewards brands built over years." },
+  { week: 6, light: "Category Entry Points Go Digital", hook: "AI doesn't search categories. It answers situations." },
+  { week: 7, light: "The Authority Signal", hook: "AI quotes experts. It ignores brands that talk like brands." },
+  { week: 8, light: "The Novelty Paradox", hook: "AI loves familiar sources. Humans love surprises." },
+  { week: 9, light: "Fluency in the Machine", hook: "Simple language ranks higher. In AI and in brains." },
+  { week: 10, light: "The Distinctive Asset Test", hook: "Would ChatGPT recognize your brand without your name?" },
+  { week: 11, light: "Scarcity Doesn't Scale", hook: "AI makes everything available. Scarcity tactics are dying." },
+  { week: 12, light: "Repetition Without Annoyance", hook: "AI surfaces your brand repeatedly. Are you building or burning?" },
+  { week: 13, light: "Q1 Synthesis: The New Visibility Stack", hook: "Three months of signals. One framework." },
+  { week: 14, light: "Pre-suasion in Pre-Search", hook: "Users form preferences before they type." },
+  { week: 15, light: "Framing the AI Answer", hook: "Same facts, different frame, different brand wins." },
+  { week: 16, light: "Right Brain, Left Brain, No Brain", hook: "AI has no hemispheres. Emotional content still wins." },
+  { week: 17, light: "The Messy Middle Gets Messier", hook: "Google's messy middle now includes AI loops." },
+  { week: 18, light: "Attention is the New Reach", hook: "AI reach is infinite. Attention is still scarce." },
+  { week: 19, light: "The Context Collapse", hook: "AI strips context. Your brand appears next to anyone." },
+  { week: 20, light: "Commitment in a Zero-Click World", hook: "Users get answers without visiting. How build commitment?" },
+  { week: 21, light: "The Trust Transfer", hook: "Users trust ChatGPT. Does that trust transfer to you?" },
+  { week: 22, light: "Emotional Salience in Rational Answers", hook: "AI gives logical answers. Winners add emotional texture." },
+  { week: 23, light: "The Expertise Paradox", hook: "AI democratizes expertise. Real experts stand out more." },
+  { week: 24, light: "Peak-End in AI Conversations", hook: "Users remember the last answer. Make sure it's you." },
+  { week: 25, light: "Habit Loops for AI Search", hook: "Users build AI habits. Brands must fit inside them." },
+  { week: 26, light: "Q2 Synthesis: The Attention Architecture", hook: "Building sustained visibility and attention." },
+  { week: 27, light: "Share of Model", hook: "SOV becomes SOM. Share of Voice becomes Share of Model." },
+  { week: 28, light: "The Data Moat", hook: "Proprietary data gets cited. Scraped content gets ignored." },
+  { week: 29, light: "When Brands Go Dark in AI", hook: "Stop appearing. See what happens. The data is brutal." },
+  { week: 30, light: "The GEO Playbook", hook: "SEO had 25 years. GEO has maybe 2. Here's the playbook." },
+  { week: 31, light: "Citations as Currency", hook: "In AI search, being cited beats being ranked." },
+  { week: 32, light: "The 3-Second Scan", hook: "AI answers get skimmed. Here's what eyes actually see." },
+  { week: 33, light: "Double Jeopardy Goes Digital", hook: "Small brands suffer twice in AI recommendations." },
+  { week: 34, light: "The Elasticity Question", hook: "What's the ROI of AI visibility? Here's what we know." },
+  { week: 35, light: "The 95-5 Rule in AI", hook: "95% aren't buying today. AI reaches all of them." },
+  { week: 36, light: "Reach vs. Frequency in Infinite Reach", hook: "AI provides infinite reach. Frequency still matters." },
+  { week: 37, light: "The Attribution Illusion", hook: "You can't track what AI drove. But it drove something." },
+  { week: 38, light: "The Recency Trap", hook: "AI favors recent content. Evergreen still builds brands." },
+  { week: 39, light: "Q3 Synthesis: Measurement in the Age of AI", hook: "What we can measure and what we can't." },
+  { week: 40, light: "The Alchemy of AI Optimization", hook: "Some things that shouldn't work in AI, work." },
+  { week: 41, light: "Choice Overload in Infinite Options", hook: "AI can recommend everything. Users want three options." },
+  { week: 42, light: "The Biology of Brand Recall", hook: "Your brand lives in neurons. AI can't replicate that." },
+  { week: 43, light: "When AI Says 'Made with AI'", hook: "Disclosure changes trust. Here's how much." },
+  { week: 44, light: "Scientific Advertising, Again", hook: "Hopkins wrote the playbook in 1923. AI is rewriting it." },
+  { week: 45, light: "The Unity Effect", hook: "Shared identity beats shared interest. In AI and in life." },
+  { week: 46, light: "Price in the AI Answer", hook: "When AI shows prices, behavioral pricing still works." },
+  { week: 47, light: "Liking the Machine", hook: "Users like ChatGPT. That liking transfers to brands." },
+  { week: 48, light: "Cognitive Load in the AI Interface", hook: "AI reduces load. Brands that add load lose." },
+  { week: 49, light: "Availability in the Age of AI", hook: "What's easy to recall beats what's easy to find." },
+  { week: 50, light: "Status Quo in a Disrupted World", hook: "Users default to familiar brands. Even when AI suggests new." },
+  { week: 51, light: "The IKEA Effect in Content", hook: "Content users participate in gets remembered." },
+  { week: 52, light: "Annual Synthesis: The Year in Lights", hook: "52 Lights. One coherent view." },
 ];
 
 const STEPS = [
-  { id: 'style', label: 'Choose Style', description: 'Pick your article tone & approach' },
-  { id: 'images', label: 'Select Images', description: 'Choose charts to include' },
-  { id: 'preview', label: 'Preview & Edit', description: 'Review and finalize' },
+  { id: 'style', label: 'Choose Voice', description: 'Pick your Light\'s tone' },
+  { id: 'images', label: 'Add Visuals', description: 'Select supporting charts' },
+  { id: 'preview', label: 'Review & Publish', description: 'Edit and send' },
 ];
 
 export default function GuidedEditor() {
@@ -109,7 +109,7 @@ export default function GuidedEditor() {
       if (data.success) {
         setPublishStatus({
           type: 'success',
-          message: data.message || 'Published to Kit as draft!',
+          message: data.message || 'Light saved as draft!',
           dashboardUrl: data.dashboardUrl
         });
       } else {
@@ -155,10 +155,10 @@ export default function GuidedEditor() {
           preview: data.videoPreview,
         });
       } else {
-        alert(data.error || 'Failed to generate video');
+        alert(data.error || 'Failed to generate audio');
       }
     } catch (e) {
-      alert('Video generation failed: ' + e.message);
+      alert('Audio generation failed: ' + e.message);
     } finally {
       setIsGeneratingVideo(false);
     }
@@ -174,21 +174,19 @@ export default function GuidedEditor() {
   };
 
   const copyLinkedInTeaser = () => {
-    // Create a short teaser for LinkedIn that drives to newsletter
     const paragraphs = editedContent.split('\n\n').filter(p => p.trim());
     const hook = paragraphs[0]?.replace(/\*\*/g, '') || '';
     const secondPara = paragraphs[1]?.replace(/\*\*/g, '') || '';
 
-    // Build teaser post
     const teaser = `${hook}
 
 ${secondPara.length > 200 ? secondPara.substring(0, 200) + '...' : secondPara}
 
-Want the full breakdown with research citations and data?
+This week's Light explores where AI visibility meets attention science.
 
-Read the complete article on my newsletter (link in comments)
+Read the full Light on Catchlight (link in comments)
 
-#BehavioralScience #Marketing #ConsumerPsychology`;
+#AIVisibility #BehavioralScience #Marketing`;
 
     navigator.clipboard.writeText(teaser);
     setCopiedTeaser(true);
@@ -203,8 +201,10 @@ Read the complete article on my newsletter (link in comments)
     setSelectedCharts([]);
     setHistory([]);
     setEditedContent('');
+    setPublishStatus(null);
+    setVideoResult(null);
 
-    // Load available charts
+    // Load available charts for this week
     try {
       const res = await fetch(`/api/guided/charts?week=${week.week}`);
       const data = await res.json();
@@ -241,7 +241,7 @@ Read the complete article on my newsletter (link in comments)
     setSelectedArticle(option);
     setEditedContent(option.content);
     setHistory([option.content]);
-    setCurrentStep(1); // Move to images step
+    setCurrentStep(1);
   };
 
   const toggleChart = (chart) => {
@@ -271,23 +271,24 @@ Read the complete article on my newsletter (link in comments)
     setCurrentStep(2);
   };
 
-  const weekData = selectedWeek ? WEEKLY_CALENDAR.find(w => w.week === selectedWeek.week) : null;
-
-  // Calculate word count
+  const weekData = selectedWeek ? CATCHLIGHT_CALENDAR.find(w => w.week === selectedWeek.week) : null;
   const wordCount = editedContent ? editedContent.split(/\s+/).filter(Boolean).length : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
       {/* Header */}
-      <header className="bg-white border-b px-6 py-4">
+      <header className="bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-500 hover:text-gray-700">
+            <Link href="/" className="text-slate-400 hover:text-white">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Guided Editor</h1>
-              <p className="text-sm text-gray-500">Choose style → Select images → Preview</p>
+              <div className="flex items-center gap-2">
+                <Sun className="w-5 h-5 text-amber-400" />
+                <h1 className="text-xl font-semibold text-white">Catchlight</h1>
+              </div>
+              <p className="text-sm text-slate-400">Create your next Light</p>
             </div>
           </div>
 
@@ -295,7 +296,7 @@ Read the complete article on my newsletter (link in comments)
             <button
               onClick={undo}
               disabled={history.length <= 1}
-              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-30 border rounded-lg"
+              className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-white disabled:opacity-30 border border-slate-600 rounded-lg"
               title="Undo"
             >
               <Undo2 className="w-4 h-4" /> Undo
@@ -307,51 +308,58 @@ Read the complete article on my newsletter (link in comments)
       <div className="max-w-5xl mx-auto p-6">
         {!selectedWeek ? (
           /* Week Selection */
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-lg font-semibold mb-4">Select a Week</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {WEEKLY_CALENDAR.map((week) => (
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-6">
+            <h2 className="text-lg font-semibold text-white mb-2">Choose a Light</h2>
+            <p className="text-slate-400 text-sm mb-6">Each Light bridges AI visibility with attention science</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {CATCHLIGHT_CALENDAR.map((week) => (
                 <button
                   key={week.week}
                   onClick={() => selectWeek(week)}
-                  className="p-3 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className="p-4 text-left bg-slate-800 border border-slate-700 rounded-lg hover:border-amber-500/50 hover:bg-slate-700/50 transition-all group"
                 >
-                  <div className="text-sm font-medium text-gray-900">Week {week.week}</div>
-                  <div className="text-xs text-gray-500 truncate">{week.topic}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-amber-400 font-medium">Light #{week.week}</span>
+                  </div>
+                  <div className="text-sm font-medium text-white group-hover:text-amber-50">{week.light}</div>
+                  <div className="text-xs text-slate-500 mt-1 line-clamp-1">{week.hook}</div>
                 </button>
               ))}
             </div>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Topic Header */}
-            <div className="bg-white rounded-xl shadow-sm border p-4">
+            {/* Light Header */}
+            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500">Week {selectedWeek.week}</div>
-                  <h2 className="text-xl font-semibold text-gray-900">{weekData?.topic}</h2>
-                  <div className="text-sm text-gray-500">Sources: {weekData?.sources}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sun className="w-4 h-4 text-amber-400" />
+                    <span className="text-amber-400 text-sm font-medium">Light #{selectedWeek.week}</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-white">{weekData?.light}</h2>
+                  <p className="text-slate-400 text-sm mt-1">{weekData?.hook}</p>
                 </div>
                 <button
                   onClick={() => setSelectedWeek(null)}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-slate-400 hover:text-white"
                 >
-                  Change week
+                  Change Light
                 </button>
               </div>
             </div>
 
             {/* Progress Steps */}
-            <div className="bg-white rounded-xl shadow-sm border p-4">
+            <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-4">
               <div className="flex items-center justify-center gap-4">
                 {STEPS.map((step, idx) => (
                   <div key={step.id} className="flex items-center">
                     <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
                       idx === currentStep
-                        ? 'bg-blue-100 text-blue-700'
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                         : idx < currentStep
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-slate-700/50 text-slate-500'
                     }`}>
                       {idx < currentStep ? (
                         <Check className="w-4 h-4" />
@@ -363,7 +371,7 @@ Read the complete article on my newsletter (link in comments)
                       <span className="text-sm font-medium">{step.label}</span>
                     </div>
                     {idx < STEPS.length - 1 && (
-                      <ArrowRight className="w-4 h-4 mx-2 text-gray-300" />
+                      <ArrowRight className="w-4 h-4 mx-2 text-slate-600" />
                     )}
                   </div>
                 ))}
@@ -372,16 +380,16 @@ Read the complete article on my newsletter (link in comments)
 
             {/* Step 1: Choose Style */}
             {currentStep === 0 && (
-              <div className="bg-white rounded-xl shadow-sm border p-6">
+              <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Choose Your Article Style</h3>
-                    <p className="text-sm text-gray-500">We'll generate 2 full article options with different approaches</p>
+                    <h3 className="text-lg font-semibold text-white">Choose Your Voice</h3>
+                    <p className="text-sm text-slate-400">Two approaches, same insight</p>
                   </div>
                   <button
                     onClick={generateArticleOptions}
                     disabled={isGenerating}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg hover:bg-amber-400 font-medium disabled:opacity-50"
                   >
                     {isGenerating ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -397,9 +405,9 @@ Read the complete article on my newsletter (link in comments)
                 {isGenerating && (
                   <div className="flex items-center justify-center py-16">
                     <div className="text-center">
-                      <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" />
-                      <p className="text-gray-600">Generating 2 article options...</p>
-                      <p className="text-sm text-gray-400 mt-1">This takes about 30 seconds</p>
+                      <Loader2 className="w-10 h-10 animate-spin text-amber-400 mx-auto mb-4" />
+                      <p className="text-slate-300">Crafting your Light...</p>
+                      <p className="text-sm text-slate-500 mt-1">~15 seconds</p>
                     </div>
                   </div>
                 )}
@@ -409,35 +417,28 @@ Read the complete article on my newsletter (link in comments)
                     {articleOptions.map((option, idx) => (
                       <div
                         key={idx}
-                        className="border-2 rounded-xl p-5 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                        className="border border-slate-600 rounded-xl p-5 cursor-pointer hover:border-amber-500/50 hover:bg-slate-700/30 transition-all"
                         onClick={() => selectArticleOption(option)}
                       >
                         <div className="flex items-center gap-3 mb-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                            idx === 0 ? 'bg-blue-600' : 'bg-purple-600'
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-slate-900 font-bold ${
+                            idx === 0 ? 'bg-amber-400' : 'bg-slate-400'
                           }`}>
                             {idx === 0 ? 'A' : 'B'}
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">{option.styleName}</h4>
-                            <p className="text-xs text-gray-500">{option.styleDescription}</p>
+                            <h4 className="font-semibold text-white">{option.styleName}</h4>
+                            <p className="text-xs text-slate-400">{option.styleDescription}</p>
                           </div>
                         </div>
 
-                        <div className="bg-gray-50 rounded-lg p-4 mb-3">
-                          <h5 className="font-medium text-gray-900 mb-1">{option.title}</h5>
-                          {option.subtitle && (
-                            <p className="text-sm text-gray-600 italic">{option.subtitle}</p>
-                          )}
-                        </div>
-
-                        <p className="text-sm text-gray-600 line-clamp-4 mb-3">
-                          {option.content.substring(0, 300)}...
+                        <p className="text-sm text-slate-300 line-clamp-4 mb-3">
+                          {option.content.substring(0, 250)}...
                         </p>
 
-                        <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center justify-between text-xs text-slate-500">
                           <span>{option.content.split(/\s+/).length} words</span>
-                          <span className="text-blue-600 font-medium">Click to select →</span>
+                          <span className="text-amber-400 font-medium">Select →</span>
                         </div>
                       </div>
                     ))}
@@ -445,9 +446,9 @@ Read the complete article on my newsletter (link in comments)
                 )}
 
                 {articleOptions.length === 0 && !isGenerating && (
-                  <div className="text-center py-12 text-gray-500">
-                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>Click "Generate Options" to create 2 article variations</p>
+                  <div className="text-center py-12 text-slate-500">
+                    <Sun className="w-12 h-12 mx-auto mb-4 text-slate-600" />
+                    <p>Click "Generate Options" to create your Light</p>
                   </div>
                 )}
               </div>
@@ -455,35 +456,35 @@ Read the complete article on my newsletter (link in comments)
 
             {/* Step 2: Select Images */}
             {currentStep === 1 && (
-              <div className="bg-white rounded-xl shadow-sm border p-6">
+              <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Select Charts & Images</h3>
-                    <p className="text-sm text-gray-500">Choose which visuals to include in your article</p>
+                    <h3 className="text-lg font-semibold text-white">Add Visual Evidence</h3>
+                    <p className="text-sm text-slate-400">Charts make insights stick</p>
                   </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setCurrentStep(0)}
-                      className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                      className="px-4 py-2 text-slate-400 hover:text-white"
                     >
                       ← Back
                     </button>
                     <button
                       onClick={goToPreview}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg hover:bg-amber-400 font-medium"
                     >
-                      Continue to Preview <ArrowRight className="w-4 h-4" />
+                      Continue <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
                 {availableCharts.length === 0 ? (
                   <div className="text-center py-12">
-                    <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-500">No charts available for this week</p>
+                    <Image className="w-12 h-12 mx-auto mb-4 text-slate-600" />
+                    <p className="text-slate-400">No charts available for this Light</p>
                     <button
                       onClick={goToPreview}
-                      className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                      className="mt-4 text-amber-400 hover:text-amber-300 font-medium"
                     >
                       Skip to preview →
                     </button>
@@ -498,22 +499,22 @@ Read the complete article on my newsletter (link in comments)
                           onClick={() => toggleChart(chart)}
                           className={`relative border-2 rounded-xl overflow-hidden cursor-pointer transition-all ${
                             isSelected
-                              ? 'border-blue-500 ring-2 ring-blue-200'
-                              : 'border-gray-200 hover:border-gray-400'
+                              ? 'border-amber-500 ring-2 ring-amber-500/30'
+                              : 'border-slate-600 hover:border-slate-500'
                           }`}
                         >
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                              <Check className="w-4 h-4 text-white" />
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                              <Check className="w-4 h-4 text-slate-900" />
                             </div>
                           )}
                           <img
                             src={chart.imageUrl}
                             alt={chart.caption}
-                            className="w-full h-40 object-contain bg-gray-50"
+                            className="w-full h-40 object-contain bg-white"
                           />
-                          <div className="p-3 bg-white">
-                            <p className="text-xs text-gray-600 line-clamp-2">{chart.caption}</p>
+                          <div className="p-3 bg-slate-800">
+                            <p className="text-xs text-slate-400 line-clamp-2">{chart.caption}</p>
                           </div>
                         </div>
                       );
@@ -522,8 +523,8 @@ Read the complete article on my newsletter (link in comments)
                 )}
 
                 {selectedCharts.length > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                  <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <p className="text-sm text-amber-400">
                       <strong>{selectedCharts.length}</strong> chart{selectedCharts.length !== 1 ? 's' : ''} selected
                     </p>
                   </div>
@@ -535,25 +536,25 @@ Read the complete article on my newsletter (link in comments)
             {currentStep === 2 && (
               <div className="grid grid-cols-3 gap-6">
                 {/* Main Content */}
-                <div className="col-span-2 bg-white rounded-xl shadow-sm border p-6">
+                <div className="col-span-2 bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Preview & Edit</h3>
-                      <p className="text-sm text-gray-500">{wordCount} words</p>
+                      <h3 className="text-lg font-semibold text-white">Review Your Light</h3>
+                      <p className="text-sm text-slate-400">{wordCount} words</p>
                     </div>
                     <div className="flex gap-3">
                       <button
                         onClick={() => setCurrentStep(1)}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                        className="px-4 py-2 text-slate-400 hover:text-white"
                       >
                         ← Back
                       </button>
                       {!isEditing && (
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                          className="px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700"
                         >
-                          Edit Content
+                          Edit
                         </button>
                       )}
                     </div>
@@ -564,12 +565,12 @@ Read the complete article on my newsletter (link in comments)
                       <textarea
                         value={editedContent}
                         onChange={(e) => setEditedContent(e.target.value)}
-                        className="w-full h-96 p-4 border rounded-lg font-mono text-sm"
+                        className="w-full h-96 p-4 bg-slate-900 border border-slate-600 rounded-lg text-slate-200 font-mono text-sm"
                       />
                       <div className="flex gap-3">
                         <button
                           onClick={() => saveEdit(editedContent)}
-                          className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          className="px-5 py-2 bg-amber-500 text-slate-900 rounded-lg hover:bg-amber-400 font-medium"
                         >
                           Save Changes
                         </button>
@@ -578,20 +579,19 @@ Read the complete article on my newsletter (link in comments)
                             setEditedContent(history[history.length - 1]);
                             setIsEditing(false);
                           }}
-                          className="px-4 py-2 border rounded-lg text-gray-600"
+                          className="px-4 py-2 border border-slate-600 rounded-lg text-slate-400"
                         >
                           Cancel
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="prose prose-lg max-w-none">
-                      <h1 className="text-2xl font-bold mb-2">{selectedArticle?.title}</h1>
+                    <div className="prose prose-invert prose-lg max-w-none">
+                      <h1 className="text-2xl font-bold text-white mb-2">{selectedArticle?.title}</h1>
                       {selectedArticle?.subtitle && (
-                        <p className="text-gray-600 italic mb-6">{selectedArticle.subtitle}</p>
+                        <p className="text-slate-400 italic mb-6">{selectedArticle.subtitle}</p>
                       )}
 
-                      {/* Render content with charts inserted */}
                       {(() => {
                         const paragraphs = editedContent.split('\n\n').filter(p => p.trim());
                         const chartInsertPoints = selectedCharts.length > 0
@@ -600,15 +600,15 @@ Read the complete article on my newsletter (link in comments)
 
                         return paragraphs.map((para, idx) => (
                           <div key={idx}>
-                            <p className="text-gray-800 leading-relaxed mb-4 whitespace-pre-wrap">{para}</p>
+                            <p className="text-slate-300 leading-relaxed mb-4 whitespace-pre-wrap">{para}</p>
                             {chartInsertPoints.includes(idx) && (
                               <div className="my-6">
                                 <img
                                   src={selectedCharts[chartInsertPoints.indexOf(idx)]?.imageUrl}
                                   alt={selectedCharts[chartInsertPoints.indexOf(idx)]?.caption}
-                                  className="max-w-md mx-auto rounded-lg border shadow-sm"
+                                  className="max-w-md mx-auto rounded-lg border border-slate-600"
                                 />
-                                <p className="text-xs text-gray-500 text-center mt-2 italic">
+                                <p className="text-xs text-slate-500 text-center mt-2 italic">
                                   {selectedCharts[chartInsertPoints.indexOf(idx)]?.caption}
                                 </p>
                               </div>
@@ -622,115 +622,91 @@ Read the complete article on my newsletter (link in comments)
 
                 {/* Sidebar */}
                 <div className="space-y-4">
-                  {/* Selected Charts */}
-                  <div className="bg-white rounded-xl shadow-sm border p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Image className="w-4 h-4" /> Selected Charts
-                    </h4>
-                    {selectedCharts.length === 0 ? (
-                      <p className="text-sm text-gray-500">No charts selected</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {selectedCharts.map((chart, idx) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                            <img
-                              src={chart.imageUrl}
-                              alt=""
-                              className="w-12 h-12 object-contain rounded"
-                            />
-                            <p className="text-xs text-gray-600 flex-1 line-clamp-2">{chart.caption}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Article Info */}
-                  <div className="bg-white rounded-xl shadow-sm border p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <FileText className="w-4 h-4" /> Article Info
+                  {/* Light Info */}
+                  <div className="bg-slate-800/50 backdrop-blur rounded-xl border border-slate-700 p-4">
+                    <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                      <Sun className="w-4 h-4 text-amber-400" /> This Light
                     </h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Style:</span>
-                        <span className="text-gray-900">{selectedArticle?.styleName}</span>
+                        <span className="text-slate-500">Style:</span>
+                        <span className="text-slate-300">{selectedArticle?.styleName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Words:</span>
-                        <span className="text-gray-900">{wordCount}</span>
+                        <span className="text-slate-500">Words:</span>
+                        <span className="text-slate-300">{wordCount}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Charts:</span>
-                        <span className="text-gray-900">{selectedCharts.length}</span>
+                        <span className="text-slate-500">Charts:</span>
+                        <span className="text-slate-300">{selectedCharts.length}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Final Actions */}
-                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">Publish & Export</h4>
+                  {/* Publish Actions */}
+                  <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/30 p-4">
+                    <h4 className="font-semibold text-white mb-3">Send This Light</h4>
 
                     <div className="space-y-3">
                       {/* Step 1: Publish to Newsletter */}
-                      <div className="pb-3 border-b border-blue-200">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">Step 1: Publish Article</p>
+                      <div className="pb-3 border-b border-amber-500/20">
+                        <p className="text-xs text-slate-400 mb-2 font-medium">Step 1: Send to Light Catchers</p>
                         <button
                           onClick={publishToKit}
                           disabled={isPublishing}
-                          className="w-full py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                          className="w-full py-2.5 bg-amber-500 text-slate-900 rounded-lg hover:bg-amber-400 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           {isPublishing ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <Mail className="w-4 h-4" />
                           )}
-                          {isPublishing ? 'Publishing...' : 'Send to Kit Newsletter'}
+                          {isPublishing ? 'Sending...' : 'Send to Kit'}
                         </button>
                       </div>
 
                       {/* Step 2: Copy LinkedIn Teaser */}
-                      <div className="pb-3 border-b border-blue-200">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">Step 2: Promote on LinkedIn</p>
+                      <div className="pb-3 border-b border-amber-500/20">
+                        <p className="text-xs text-slate-400 mb-2 font-medium">Step 2: Share on LinkedIn</p>
                         <button
                           onClick={copyLinkedInTeaser}
-                          className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2"
+                          className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium flex items-center justify-center gap-2"
                         >
                           {copiedTeaser ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                          {copiedTeaser ? 'Teaser Copied!' : 'Copy LinkedIn Teaser'}
+                          {copiedTeaser ? 'Copied!' : 'Copy Teaser'}
                         </button>
-                        <p className="text-xs text-gray-400 mt-1">Short post with link to newsletter</p>
                       </div>
 
-                      {/* Optional: Copy Full Article */}
-                      <button
-                        onClick={copyFullArticle}
-                        className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm flex items-center justify-center gap-2"
-                      >
-                        {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                        {copied ? 'Copied!' : 'Copy Full Article'}
-                      </button>
-
-                      {/* Generate Video */}
+                      {/* Generate Audio */}
                       <button
                         onClick={generateVideo}
                         disabled={isGeneratingVideo}
-                        className="w-full py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {isGeneratingVideo ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <Video className="w-4 h-4" />
                         )}
-                        {isGeneratingVideo ? 'Generating...' : 'Generate Video'}
+                        {isGeneratingVideo ? 'Generating...' : 'Generate Audio'}
+                      </button>
+
+                      {/* Copy Full */}
+                      <button
+                        onClick={copyFullArticle}
+                        className="w-full py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 text-sm flex items-center justify-center gap-2"
+                      >
+                        {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        {copied ? 'Copied!' : 'Copy Full Light'}
                       </button>
                     </div>
 
-                    {/* Status message */}
+                    {/* Status */}
                     {publishStatus && (
                       <div className={`mt-3 p-3 rounded text-sm ${
                         publishStatus.type === 'success'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
                       }`}>
                         <p>{publishStatus.message}</p>
                         {publishStatus.dashboardUrl && (
@@ -738,7 +714,7 @@ Read the complete article on my newsletter (link in comments)
                             href={publishStatus.dashboardUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-green-700 underline text-xs mt-1 block"
+                            className="underline text-xs mt-1 block"
                           >
                             Open Kit Dashboard →
                           </a>
@@ -746,11 +722,11 @@ Read the complete article on my newsletter (link in comments)
                       </div>
                     )}
 
-                    {/* Video Result */}
+                    {/* Audio Result */}
                     {videoResult && (
-                      <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                        <p className="text-sm font-medium text-purple-800 mb-2">
-                          Audio Narration Ready!
+                      <div className="mt-3 p-3 bg-purple-500/20 rounded-lg border border-purple-500/30">
+                        <p className="text-sm font-medium text-purple-300 mb-2">
+                          Audio Ready!
                         </p>
                         <audio
                           controls
@@ -759,14 +735,11 @@ Read the complete article on my newsletter (link in comments)
                         />
                         <a
                           href={videoResult.audioUrl}
-                          download="narration.mp3"
-                          className="text-xs text-purple-600 hover:text-purple-800 underline"
+                          download="light-narration.mp3"
+                          className="text-xs text-purple-400 hover:text-purple-300 underline"
                         >
                           Download MP3
                         </a>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {videoResult.preview?.sceneCount} scenes, {videoResult.preview?.estimatedDuration}
-                        </p>
                       </div>
                     )}
                   </div>
