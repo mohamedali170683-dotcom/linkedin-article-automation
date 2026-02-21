@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@remotion/cli": "^4.0.419",
     "@remotion/renderer": "^4.0.419",
     "@vercel/blob": "^0.27.0",

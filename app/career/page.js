@@ -89,6 +89,9 @@ export default function CareerCommandCenter() {
   const [copied, setCopied] = useState(false);
   const [customPillar, setCustomPillar] = useState('ai');
   const [customTitle, setCustomTitle] = useState('');
+  const [customAngle, setCustomAngle] = useState('');
+  const [alignedTo, setAlignedTo] = useState([]);
+  const [lastGeneratedPost, setLastGeneratedPost] = useState(null);
 
   // Tracker state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -164,9 +167,11 @@ export default function CareerCommandCenter() {
   };
 
   // Content generation
-  const generateDraft = async (post) => {
+  const generateDraft = async (post, angle) => {
     setGeneratingFor(post.title);
     setGeneratedDraft('');
+    setAlignedTo([]);
+    setLastGeneratedPost(post.title);
     try {
       const highFitRoles = apps.filter(a => a.fitScore >= 4);
       const res = await fetch('/api/career/generate', {
@@ -176,15 +181,18 @@ export default function CareerCommandCenter() {
           title: post.title,
           pillar: post.pillar,
           requirement: post.req,
+          angle: angle || '',
           targetRoles: highFitRoles.map(r => ({
             title: r.title,
             company: r.company,
             requirements: r.requirements,
+            fitScore: r.fitScore,
           })),
         }),
       });
       const data = await res.json();
       setGeneratedDraft(data.draft || 'Generation failed');
+      setAlignedTo(data.alignedTo || []);
     } catch (e) {
       setGeneratedDraft('Error: ' + e.message);
     } finally {
@@ -195,7 +203,7 @@ export default function CareerCommandCenter() {
   const generateCustom = async () => {
     if (!customTitle.trim()) return;
     const post = { title: customTitle, pillar: customPillar, req: '', format: 'text' };
-    await generateDraft(post);
+    await generateDraft(post, customAngle);
   };
 
   const markPublished = (postTitle) => {
@@ -619,7 +627,15 @@ export default function CareerCommandCenter() {
             {generatedDraft && (
               <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-slate-400">Generated Draft</h3>
+                  <div>
+                    <h3 className="text-sm font-medium text-slate-400">Generated Draft</h3>
+                    {alignedTo.length > 0 && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Target className="w-3 h-3 text-amber-400" />
+                        <span className="text-xs text-amber-400">Aligned to: {alignedTo.join(', ')}</span>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={copyDraft}
@@ -629,13 +645,24 @@ export default function CareerCommandCenter() {
                       {copied ? 'Copied!' : 'Copy to Clipboard'}
                     </button>
                     <button
-                      onClick={() => { if (generatingFor === null) { const lastPost = weekPosts.find(p => generatedDraft.includes(p.title.split(':')[0]) || true); if (lastPost) markPublished(lastPost.title); } }}
-                      className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500"
+                      onClick={() => { if (lastGeneratedPost) markPublished(lastGeneratedPost); }}
+                      disabled={!lastGeneratedPost || posts[lastGeneratedPost]}
+                      className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500 disabled:opacity-40"
                     >
-                      <CheckCircle className="w-3 h-3" /> Mark Published
+                      <CheckCircle className="w-3 h-3" /> {posts[lastGeneratedPost] ? 'Published' : 'Mark Published'}
                     </button>
                     <button
-                      onClick={() => setGeneratedDraft('')}
+                      onClick={() => {
+                        const post = weekPosts.find(p => p.title === lastGeneratedPost) || { title: lastGeneratedPost, pillar: customPillar, req: '' };
+                        generateDraft(post);
+                      }}
+                      disabled={generatingFor !== null}
+                      className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700 disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Regenerate
+                    </button>
+                    <button
+                      onClick={() => { setGeneratedDraft(''); setAlignedTo([]); setLastGeneratedPost(null); }}
                       className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs hover:bg-slate-700"
                     >
                       Clear
@@ -651,31 +678,48 @@ export default function CareerCommandCenter() {
             {/* Custom Post Generator */}
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
               <h3 className="text-sm font-medium text-slate-400 mb-4">Custom Post Generator</h3>
-              <div className="flex gap-3">
-                <select
-                  value={customPillar}
-                  onChange={e => setCustomPillar(e.target.value)}
-                  className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-slate-200 text-sm"
-                >
-                  {PILLARS.map(p => (
-                    <option key={p.id} value={p.id}>{p.icon} {p.label}</option>
-                  ))}
-                </select>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <select
+                    value={customPillar}
+                    onChange={e => setCustomPillar(e.target.value)}
+                    className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-slate-200 text-sm"
+                  >
+                    {PILLARS.map(p => (
+                      <option key={p.id} value={p.id}>{p.icon} {p.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={customTitle}
+                    onChange={e => setCustomTitle(e.target.value)}
+                    placeholder="Enter post title..."
+                    className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
+                  />
+                  <button
+                    onClick={generateCustom}
+                    disabled={!customTitle.trim() || generatingFor !== null}
+                    className="px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg font-medium text-sm hover:bg-amber-400 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {generatingFor ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                    Generate
+                  </button>
+                </div>
                 <input
                   type="text"
-                  value={customTitle}
-                  onChange={e => setCustomTitle(e.target.value)}
-                  placeholder="Enter post title..."
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
+                  value={customAngle}
+                  onChange={e => setCustomAngle(e.target.value)}
+                  placeholder="Optional angle: e.g. 'how we used AI to reduce Deutsche Bank CPA by 40%'"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
                 />
-                <button
-                  onClick={generateCustom}
-                  disabled={!customTitle.trim() || generatingFor !== null}
-                  className="px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg font-medium text-sm hover:bg-amber-400 disabled:opacity-50 flex items-center gap-2"
-                >
-                  {generatingFor ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                  Generate
-                </button>
+                {apps.filter(a => a.fitScore >= 4).length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <Target className="w-3 h-3 text-amber-400" />
+                    <span className="text-xs text-amber-400">
+                      Will align to: {apps.filter(a => a.fitScore >= 4).map(a => a.company).join(', ')}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
