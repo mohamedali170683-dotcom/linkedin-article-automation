@@ -78,7 +78,7 @@ export default function CareerCommandCenter() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Scanner state
-  const [scanQuery, setScanQuery] = useState('VP Marketing OR "Head of Marketing" OR CMO Germany');
+  const [scanQuery, setScanQuery] = useState('VP Marketing Germany');
   const [scanResults, setScanResults] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanEngine, setScanEngine] = useState('google_jobs');

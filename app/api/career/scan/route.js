@@ -17,11 +17,23 @@ function scoreJob(job) {
   return score;
 }
 
-// SerpAPI Google Jobs search
-async function searchWithSerpAPI(query) {
-  const apiKey = process.env.SERPAPI_KEY;
-  if (!apiKey) return null;
+// Split complex queries into simpler Google Jobs-friendly searches
+function splitQuery(query) {
+  // Remove boolean operators and quoted phrases, split into individual search terms
+  const cleaned = query
+    .replace(/\bOR\b/gi, ',')
+    .replace(/"/g, '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 
+  // If the query was already simple (no OR/commas), use as-is
+  if (cleaned.length <= 1) return [query.replace(/"/g, '')];
+  return cleaned;
+}
+
+// Single SerpAPI Google Jobs request
+async function serpAPISearch(query, apiKey) {
   const params = new URLSearchParams({
     engine: 'google_jobs',
     q: query,
@@ -33,22 +45,19 @@ async function searchWithSerpAPI(query) {
   const response = await fetch(`https://serpapi.com/search?${params}`);
   if (!response.ok) {
     console.error('SerpAPI error:', response.status, await response.text());
-    return null;
+    return [];
   }
 
   const data = await response.json();
-  console.log('SerpAPI response keys:', Object.keys(data));
-  console.log('SerpAPI jobs_results count:', (data.jobs_results || []).length);
-  if (data.error) console.error('SerpAPI error body:', data.error);
-  const results = data.jobs_results || [];
+  if (data.error) {
+    console.error('SerpAPI error body:', data.error);
+    return [];
+  }
 
-  return results.map(job => {
-    // Extract requirements from job_highlights
+  return (data.jobs_results || []).map(job => {
     const qualifications = job.job_highlights?.find(h => h.title === 'Qualifications');
     const responsibilities = job.job_highlights?.find(h => h.title === 'Responsibilities');
     const requirements = (qualifications?.items || responsibilities?.items || []).slice(0, 5);
-
-    // Get apply URL
     const applyUrl = job.apply_options?.[0]?.link || '';
 
     return {
@@ -63,6 +72,36 @@ async function searchWithSerpAPI(query) {
       schedule: job.detected_extensions?.schedule_type || '',
     };
   });
+}
+
+// SerpAPI Google Jobs search — splits complex queries into parallel searches
+async function searchWithSerpAPI(query) {
+  const apiKey = process.env.SERPAPI_KEY;
+  if (!apiKey) return null;
+
+  const subQueries = splitQuery(query);
+  console.log('SerpAPI sub-queries:', subQueries);
+
+  // Run all sub-queries in parallel
+  const allResults = await Promise.all(
+    subQueries.map(q => serpAPISearch(q, apiKey))
+  );
+
+  // Flatten and deduplicate by title+company
+  const seen = new Set();
+  const deduped = [];
+  for (const results of allResults) {
+    for (const job of results) {
+      const key = `${job.title}||${job.company}`.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(job);
+      }
+    }
+  }
+
+  console.log('SerpAPI total results:', deduped.length);
+  return deduped;
 }
 
 // Claude web search fallback
