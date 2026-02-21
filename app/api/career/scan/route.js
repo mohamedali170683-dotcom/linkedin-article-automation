@@ -17,6 +17,12 @@ function scoreJob(job) {
   return score;
 }
 
+// Tested queries that return results from Google Jobs Germany:
+// VP Marketing (9), Leiter Marketing (10), Marketingleiter (10),
+// Marketing Leitung (10), Leitung Marketing (9),
+// Leiter Online Marketing (7), Leiter Digital Marketing (10)
+// NOT working: Marketing Director, Head of Marketing, CMO, Marketing Manager
+
 // Expand user query into DACH-market Google Jobs searches
 function expandQuery(query) {
   const q = query.toLowerCase().replace(/"/g, '').trim();
@@ -24,31 +30,35 @@ function expandQuery(query) {
   // Split OR-style queries
   const parts = q.split(/\bor\b|,/).map(s => s.trim()).filter(Boolean);
 
-  // Map common executive titles to Google Jobs-friendly equivalents
   const expansions = [];
   for (const part of parts) {
-    // Remove "germany/dach/remote" from query — we use location param instead
-    const cleaned = part.replace(/\b(germany|dach|remote|deutschland|berlin|munich|hamburg)\b/gi, '').trim();
+    // Remove location words — we use location=Germany param
+    const cleaned = part.replace(/\b(germany|dach|remote|deutschland|berlin|munich|hamburg|frankfurt|düsseldorf|köln|stuttgart)\b/gi, '').trim();
     if (!cleaned) continue;
 
     expansions.push(cleaned);
 
-    // Add German-market equivalents for common titles
+    // Add proven German-market equivalents
     if (/vp.?marketing|vice president.?marketing/i.test(cleaned)) {
-      expansions.push('Marketing Director');
       expansions.push('Leiter Marketing');
-    } else if (/head of marketing/i.test(cleaned)) {
-      expansions.push('Marketing Director');
+      expansions.push('Marketing Leitung');
+    } else if (/head of marketing|marketing director/i.test(cleaned)) {
+      expansions.push('VP Marketing');
       expansions.push('Leiter Marketing');
-    } else if (/\bcmo\b/i.test(cleaned)) {
-      expansions.push('Chief Marketing Officer');
-      expansions.push('Marketing Director');
-    } else if (/head of digital/i.test(cleaned)) {
-      expansions.push('Digital Marketing Director');
+      expansions.push('Marketing Leitung');
+    } else if (/\bcmo\b|chief marketing/i.test(cleaned)) {
+      expansions.push('VP Marketing');
+      expansions.push('Leiter Marketing');
+      expansions.push('Marketing Leitung');
+    } else if (/head of digital|digital marketing/i.test(cleaned)) {
+      expansions.push('Leiter Digital Marketing');
+      expansions.push('Leiter Online Marketing');
+    } else if (/marketing manager/i.test(cleaned)) {
+      expansions.push('Marketingleiter');
+      expansions.push('Leiter Marketing');
     }
   }
 
-  // Deduplicate
   return [...new Set(expansions)];
 }
 

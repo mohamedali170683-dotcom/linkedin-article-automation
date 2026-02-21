@@ -517,11 +517,11 @@ export default function CareerCommandCenter() {
               <div className="flex flex-wrap gap-2 mt-3">
                 {[
                   'VP Marketing',
-                  'Marketing Director',
-                  'Head of Marketing',
                   'Leiter Marketing',
-                  'CMO, Chief Marketing Officer',
-                  'Head of Digital Marketing',
+                  'Marketing Leitung',
+                  'Marketingleiter',
+                  'Leiter Digital Marketing',
+                  'Leiter Online Marketing',
                 ].map(q => (
                   <button
                     key={q}
