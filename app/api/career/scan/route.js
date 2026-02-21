@@ -17,19 +17,39 @@ function scoreJob(job) {
   return score;
 }
 
-// Split complex queries into simpler Google Jobs-friendly searches
-function splitQuery(query) {
-  // Remove boolean operators and quoted phrases, split into individual search terms
-  const cleaned = query
-    .replace(/\bOR\b/gi, ',')
-    .replace(/"/g, '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+// Expand user query into DACH-market Google Jobs searches
+function expandQuery(query) {
+  const q = query.toLowerCase().replace(/"/g, '').trim();
 
-  // If the query was already simple (no OR/commas), use as-is
-  if (cleaned.length <= 1) return [query.replace(/"/g, '')];
-  return cleaned;
+  // Split OR-style queries
+  const parts = q.split(/\bor\b|,/).map(s => s.trim()).filter(Boolean);
+
+  // Map common executive titles to Google Jobs-friendly equivalents
+  const expansions = [];
+  for (const part of parts) {
+    // Remove "germany/dach/remote" from query — we use location param instead
+    const cleaned = part.replace(/\b(germany|dach|remote|deutschland|berlin|munich|hamburg)\b/gi, '').trim();
+    if (!cleaned) continue;
+
+    expansions.push(cleaned);
+
+    // Add German-market equivalents for common titles
+    if (/vp.?marketing|vice president.?marketing/i.test(cleaned)) {
+      expansions.push('Marketing Director');
+      expansions.push('Leiter Marketing');
+    } else if (/head of marketing/i.test(cleaned)) {
+      expansions.push('Marketing Director');
+      expansions.push('Leiter Marketing');
+    } else if (/\bcmo\b/i.test(cleaned)) {
+      expansions.push('Chief Marketing Officer');
+      expansions.push('Marketing Director');
+    } else if (/head of digital/i.test(cleaned)) {
+      expansions.push('Digital Marketing Director');
+    }
+  }
+
+  // Deduplicate
+  return [...new Set(expansions)];
 }
 
 // Single SerpAPI Google Jobs request
@@ -37,7 +57,7 @@ async function serpAPISearch(query, apiKey) {
   const params = new URLSearchParams({
     engine: 'google_jobs',
     q: query,
-    gl: 'de',
+    location: 'Germany',
     hl: 'en',
     api_key: apiKey,
   });
@@ -45,8 +65,12 @@ async function serpAPISearch(query, apiKey) {
   const response = await fetch(`https://serpapi.com/search?${params}`);
   const data = await response.json();
 
-  // SerpAPI returns errors with 200 status, so check body
+  // SerpAPI returns auth/quota errors with 200 status
   if (data.error) {
+    // "Google hasn't returned any results" = no matches, not a real error
+    if (data.error.includes("hasn't returned any results")) {
+      return [];
+    }
     throw new Error(`SerpAPI: ${data.error}`);
   }
 
@@ -74,12 +98,12 @@ async function serpAPISearch(query, apiKey) {
   });
 }
 
-// SerpAPI Google Jobs search — splits complex queries into parallel searches
+// SerpAPI Google Jobs search — expands and runs parallel searches
 async function searchWithSerpAPI(query) {
   const apiKey = process.env.SERPAPI_KEY;
   if (!apiKey) return null;
 
-  const subQueries = splitQuery(query);
+  const subQueries = expandQuery(query);
 
   // Run all sub-queries in parallel
   const allResults = await Promise.all(
