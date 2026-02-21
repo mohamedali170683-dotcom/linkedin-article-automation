@@ -58,6 +58,7 @@ async function serpAPISearch(query, apiKey) {
     engine: 'google_jobs',
     q: query,
     location: 'Germany',
+    gl: 'de',
     hl: 'en',
     api_key: apiKey,
   });
