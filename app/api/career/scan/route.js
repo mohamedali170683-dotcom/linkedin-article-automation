@@ -43,15 +43,15 @@ async function serpAPISearch(query, apiKey) {
   });
 
   const response = await fetch(`https://serpapi.com/search?${params}`);
-  if (!response.ok) {
-    console.error('SerpAPI error:', response.status, await response.text());
-    return [];
+  const data = await response.json();
+
+  // SerpAPI returns errors with 200 status, so check body
+  if (data.error) {
+    throw new Error(`SerpAPI: ${data.error}`);
   }
 
-  const data = await response.json();
-  if (data.error) {
-    console.error('SerpAPI error body:', data.error);
-    return [];
+  if (!response.ok) {
+    throw new Error(`SerpAPI HTTP ${response.status}`);
   }
 
   return (data.jobs_results || []).map(job => {
@@ -80,7 +80,6 @@ async function searchWithSerpAPI(query) {
   if (!apiKey) return null;
 
   const subQueries = splitQuery(query);
-  console.log('SerpAPI sub-queries:', subQueries);
 
   // Run all sub-queries in parallel
   const allResults = await Promise.all(
@@ -100,7 +99,6 @@ async function searchWithSerpAPI(query) {
     }
   }
 
-  console.log('SerpAPI total results:', deduped.length);
   return deduped;
 }
 
