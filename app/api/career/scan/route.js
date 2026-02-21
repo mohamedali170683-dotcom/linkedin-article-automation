@@ -57,7 +57,7 @@ async function serpAPISearch(query, apiKey) {
   const params = new URLSearchParams({
     engine: 'google_jobs',
     q: query,
-    location: 'Germany',
+    gl: 'de',
     hl: 'en',
     api_key: apiKey,
   });
