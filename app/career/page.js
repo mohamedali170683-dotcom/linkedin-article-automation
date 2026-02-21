@@ -83,6 +83,7 @@ export default function CareerCommandCenter() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanEngine, setScanEngine] = useState('google_jobs');
   const [usedEngine, setUsedEngine] = useState('');
+  const [scanError, setScanError] = useState('');
 
   // Content state
   const [selectedContentWeek, setSelectedContentWeek] = useState(currentWeek);
@@ -134,6 +135,7 @@ export default function CareerCommandCenter() {
     setIsScanning(true);
     setScanResults([]);
     setUsedEngine('');
+    setScanError('');
     try {
       const res = await fetch('/api/career/scan', {
         method: 'POST',
@@ -141,10 +143,15 @@ export default function CareerCommandCenter() {
         body: JSON.stringify({ query: scanQuery, engine: scanEngine }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        setScanError(data.error || `Scan failed (${res.status})`);
+        return;
+      }
       setScanResults(data.jobs || []);
       setUsedEngine(data.engine || scanEngine);
     } catch (e) {
       console.error('Scan failed:', e);
+      setScanError('Network error — check console for details');
     } finally {
       setIsScanning(false);
     }
@@ -536,6 +543,23 @@ export default function CareerCommandCenter() {
                 <p className="text-sm text-slate-500 mt-1">
                   {scanEngine === 'google_jobs' ? '~3-5 seconds' : '~15-30 seconds'}
                 </p>
+              </div>
+            )}
+
+            {/* Error */}
+            {scanError && !isScanning && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 text-center">
+                <p className="text-red-400 font-medium">Scan failed</p>
+                <p className="text-sm text-red-400/70 mt-1">{scanError}</p>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!isScanning && !scanError && scanResults.length === 0 && usedEngine && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-8 text-center">
+                <Search className="w-8 h-8 text-slate-500 mx-auto mb-3" />
+                <p className="text-slate-400 font-medium">No results found</p>
+                <p className="text-sm text-slate-500 mt-1">Try a simpler query or switch to AI Deep Search</p>
               </div>
             )}
 

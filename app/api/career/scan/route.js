@@ -37,6 +37,9 @@ async function searchWithSerpAPI(query) {
   }
 
   const data = await response.json();
+  console.log('SerpAPI response keys:', Object.keys(data));
+  console.log('SerpAPI jobs_results count:', (data.jobs_results || []).length);
+  if (data.error) console.error('SerpAPI error body:', data.error);
   const results = data.jobs_results || [];
 
   return results.map(job => {
