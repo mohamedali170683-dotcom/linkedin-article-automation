@@ -5,7 +5,7 @@ import {
   Search, Loader2, Copy, Check, RefreshCw, Plus, Trash2,
   ChevronDown, ChevronUp, ExternalLink, BarChart3, FileText,
   Target, Briefcase, TrendingUp, Users, Mic, Globe, ArrowLeft,
-  Sun, CheckCircle, X, Edit3, Save
+  Sun, CheckCircle, X, Edit3, Save, Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { PILLARS, FIT_CRITERIA, WEEK_POSTS, STATUS_OPTIONS, MOHAMED_CONTEXT } from '../lib/career-data';
@@ -78,9 +78,11 @@ export default function CareerCommandCenter() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Scanner state
-  const [scanQuery, setScanQuery] = useState('VP Marketing OR "Head of Marketing" OR CMO DACH Germany 2026');
+  const [scanQuery, setScanQuery] = useState('VP Marketing OR "Head of Marketing" OR CMO Germany');
   const [scanResults, setScanResults] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
+  const [scanEngine, setScanEngine] = useState('google_jobs');
+  const [usedEngine, setUsedEngine] = useState('');
 
   // Content state
   const [selectedContentWeek, setSelectedContentWeek] = useState(currentWeek);
@@ -131,14 +133,16 @@ export default function CareerCommandCenter() {
   const scanMarket = async () => {
     setIsScanning(true);
     setScanResults([]);
+    setUsedEngine('');
     try {
       const res = await fetch('/api/career/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: scanQuery }),
+        body: JSON.stringify({ query: scanQuery, engine: scanEngine }),
       });
       const data = await res.json();
       setScanResults(data.jobs || []);
+      setUsedEngine(data.engine || scanEngine);
     } catch (e) {
       console.error('Scan failed:', e);
     } finally {
@@ -465,6 +469,7 @@ export default function CareerCommandCenter() {
                   onChange={e => setScanQuery(e.target.value)}
                   placeholder="Search for VP Marketing, CMO, Head of Marketing..."
                   className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
+                  onKeyDown={e => { if (e.key === 'Enter' && !isScanning) scanMarket(); }}
                 />
                 <button
                   onClick={scanMarket}
@@ -475,14 +480,40 @@ export default function CareerCommandCenter() {
                   {isScanning ? 'Scanning...' : 'Scan Market'}
                 </button>
               </div>
+
+              {/* Engine toggle */}
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-xs text-slate-500">Source:</span>
+                <button
+                  onClick={() => setScanEngine('google_jobs')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    scanEngine === 'google_jobs'
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  }`}
+                >
+                  <Globe className="w-3 h-3 inline mr-1" />Google Jobs
+                </button>
+                <button
+                  onClick={() => setScanEngine('claude')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    scanEngine === 'claude'
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3 inline mr-1" />AI Deep Search
+                </button>
+              </div>
+
               {/* Quick filters */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {[
-                  'VP Marketing DACH Germany',
-                  'CMO Germany remote',
-                  'Head of Marketing Hamburg Berlin Munich',
+                  'VP Marketing Germany',
+                  'CMO DACH remote',
+                  'Head of Marketing Berlin Munich Hamburg',
                   'Marketing Director FMCG Germany',
-                  'Head of Digital Marketing DACH',
+                  'Head of Digital Marketing Germany',
                 ].map(q => (
                   <button
                     key={q}
@@ -499,15 +530,26 @@ export default function CareerCommandCenter() {
             {isScanning && (
               <div className="flex flex-col items-center py-12">
                 <Loader2 className="w-10 h-10 animate-spin text-amber-400 mb-4" />
-                <p className="text-slate-300">Scanning job market with AI web search...</p>
-                <p className="text-sm text-slate-500 mt-1">This may take 15-30 seconds</p>
+                <p className="text-slate-300">
+                  {scanEngine === 'google_jobs' ? 'Searching Google Jobs (LinkedIn, Indeed, StepStone)...' : 'AI deep scanning the web...'}
+                </p>
+                <p className="text-sm text-slate-500 mt-1">
+                  {scanEngine === 'google_jobs' ? '~3-5 seconds' : '~15-30 seconds'}
+                </p>
               </div>
             )}
 
             {/* Results */}
             {scanResults.length > 0 && !isScanning && (
               <div className="space-y-4">
-                <h4 className="text-sm font-medium text-slate-400">{scanResults.length} results found</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-slate-400">{scanResults.length} results found</h4>
+                  {usedEngine && (
+                    <span className="text-xs text-slate-500">
+                      via {usedEngine === 'google_jobs' ? 'Google Jobs' : 'AI Web Search'}
+                    </span>
+                  )}
+                </div>
                 {scanResults.sort((a, b) => (b.fitScore || 0) - (a.fitScore || 0)).map((job, i) => (
                   <div key={i} className="bg-slate-800 border border-slate-700 rounded-xl p-5">
                     <div className="flex items-start justify-between gap-4">
@@ -522,7 +564,16 @@ export default function CareerCommandCenter() {
                             Fit: {job.fitScore}/5
                           </span>
                         </div>
-                        <p className="text-sm text-slate-400 mb-3">{job.company} - {job.location}</p>
+                        <p className="text-sm text-slate-300 mb-1">{job.company}</p>
+                        <div className="flex items-center gap-3 mb-3 text-xs text-slate-400">
+                          <span>{job.location}</span>
+                          {job.source && <span className="px-1.5 py-0.5 bg-slate-700 rounded">{job.source}</span>}
+                          {job.postedAt && <span>{job.postedAt}</span>}
+                          {job.schedule && <span>{job.schedule}</span>}
+                        </div>
+                        {job.description && (
+                          <p className="text-xs text-slate-500 mb-3 line-clamp-2">{job.description}</p>
+                        )}
                         <div className="flex flex-wrap gap-1.5">
                           {(job.requirements || []).map((req, j) => (
                             <span key={j} className="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs">{req}</span>
@@ -540,7 +591,7 @@ export default function CareerCommandCenter() {
                         </button>
                         {job.url && (
                           <a href={job.url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
-                            <ExternalLink className="w-3 h-3" /> View
+                            <ExternalLink className="w-3 h-3" /> Apply
                           </a>
                         )}
                       </div>
