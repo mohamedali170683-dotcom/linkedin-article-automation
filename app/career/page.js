@@ -5,7 +5,7 @@ import {
   Search, Loader2, Copy, Check, RefreshCw, Plus, Trash2,
   ChevronDown, ChevronUp, ExternalLink, BarChart3, FileText,
   Target, Briefcase, TrendingUp, Users, Mic, Globe, ArrowLeft,
-  Sun, CheckCircle, X, Edit3, Save, Sparkles
+  Sun, CheckCircle, X, Edit3, Save, Sparkles, Star
 } from 'lucide-react';
 import Link from 'next/link';
 import { PILLARS, FIT_CRITERIA, WEEK_POSTS, STATUS_OPTIONS, MOHAMED_CONTEXT } from '../lib/career-data';
@@ -95,6 +95,7 @@ export default function CareerCommandCenter() {
   const [customAngle, setCustomAngle] = useState('');
   const [alignedTo, setAlignedTo] = useState([]);
   const [lastGeneratedPost, setLastGeneratedPost] = useState(null);
+  const [selectedTargetRoles, setSelectedTargetRoles] = useState([]); // manually picked roles for alignment
 
   // Tracker state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -171,20 +172,46 @@ export default function CareerCommandCenter() {
       fitScore: job.fitScore || 0,
       status: 'Identified',
       notes: '',
+      starred: false,
+      contentCount: 0,
     };
     const updated = [...apps, newApp];
     setApps(updated);
     persistData(updated, null, null);
   };
 
-  // Content generation
+  const toggleStar = (id) => {
+    const updated = apps.map(a => a.id === id ? { ...a, starred: !a.starred } : a);
+    setApps(updated);
+    persistData(updated, null, null);
+  };
+
+  const toggleTargetRole = (id) => {
+    setSelectedTargetRoles(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  // Content generation — uses manually selected roles, then starred, then fitScore >= 3
+  const getTargetRoles = () => {
+    // Priority 1: manually selected roles in Content Engine
+    if (selectedTargetRoles.length > 0) {
+      return apps.filter(a => selectedTargetRoles.includes(a.id));
+    }
+    // Priority 2: starred roles
+    const starred = apps.filter(a => a.starred);
+    if (starred.length > 0) return starred;
+    // Priority 3: fitScore >= 3
+    return apps.filter(a => a.fitScore >= 3);
+  };
+
   const generateDraft = async (post, angle) => {
     setGeneratingFor(post.title);
     setGeneratedDraft('');
     setAlignedTo([]);
     setLastGeneratedPost(post.title);
     try {
-      const highFitRoles = apps.filter(a => a.fitScore >= 4);
+      const targetRoles = getTargetRoles();
       const res = await fetch('/api/career/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -193,7 +220,7 @@ export default function CareerCommandCenter() {
           pillar: post.pillar,
           requirement: post.req,
           angle: angle || '',
-          targetRoles: highFitRoles.map(r => ({
+          targetRoles: targetRoles.map(r => ({
             title: r.title,
             company: r.company,
             requirements: r.requirements,
@@ -204,6 +231,16 @@ export default function CareerCommandCenter() {
       const data = await res.json();
       setGeneratedDraft(data.draft || 'Generation failed');
       setAlignedTo(data.alignedTo || []);
+
+      // Increment contentCount for each targeted role
+      if (targetRoles.length > 0) {
+        const targetIds = targetRoles.map(r => r.id);
+        const updated = apps.map(a =>
+          targetIds.includes(a.id) ? { ...a, contentCount: (a.contentCount || 0) + 1 } : a
+        );
+        setApps(updated);
+        persistData(updated, null, null);
+      }
     } catch (e) {
       setGeneratedDraft('Error: ' + e.message);
     } finally {
@@ -242,6 +279,8 @@ export default function CareerCommandCenter() {
       fitScore: newApp.fitChecks.length,
       status: 'Identified',
       notes: newApp.notes,
+      starred: false,
+      contentCount: 0,
     };
     const updated = [...apps, app];
     setApps(updated);
@@ -788,12 +827,56 @@ export default function CareerCommandCenter() {
                   placeholder="Optional angle: e.g. 'how we used AI to reduce Deutsche Bank CPA by 40%'"
                   className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
                 />
-                {apps.filter(a => a.fitScore >= 4).length > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <Target className="w-3 h-3 text-amber-400" />
-                    <span className="text-xs text-amber-400">
-                      Will align to: {apps.filter(a => a.fitScore >= 4).map(a => a.company).join(', ')}
-                    </span>
+                {/* Target Role Selector */}
+                {apps.length > 0 && (
+                  <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                        <Target className="w-3 h-3 text-amber-400" />
+                        Align content to tracked roles
+                      </span>
+                      {selectedTargetRoles.length > 0 && (
+                        <button onClick={() => setSelectedTargetRoles([])} className="text-xs text-slate-500 hover:text-slate-300">
+                          Clear selection
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      {[...apps].sort((a, b) => {
+                        if (a.starred && !b.starred) return -1;
+                        if (!a.starred && b.starred) return 1;
+                        return (b.fitScore || 0) - (a.fitScore || 0);
+                      }).map(app => (
+                        <label key={app.id} className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors ${
+                          selectedTargetRoles.includes(app.id)
+                            ? 'bg-amber-500/10 border border-amber-500/30'
+                            : 'hover:bg-slate-800 border border-transparent'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={selectedTargetRoles.includes(app.id)}
+                            onChange={() => toggleTargetRole(app.id)}
+                            className="rounded border-slate-600 bg-slate-800 text-amber-500 w-3.5 h-3.5"
+                          />
+                          {app.starred && <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />}
+                          <span className="text-xs text-white flex-1 truncate">{app.title} — {app.company}</span>
+                          <span className={`text-xs font-mono flex-shrink-0 ${
+                            app.fitScore >= 4 ? 'text-amber-400' : app.fitScore >= 3 ? 'text-blue-400' : 'text-slate-500'
+                          }`}>{app.fitScore}/5</span>
+                          {(app.contentCount || 0) > 0 && (
+                            <span className="text-xs text-emerald-400/70 flex-shrink-0">{app.contentCount}p</span>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      {selectedTargetRoles.length > 0
+                        ? `${selectedTargetRoles.length} role${selectedTargetRoles.length !== 1 ? 's' : ''} selected`
+                        : apps.some(a => a.starred)
+                          ? `Auto: ${apps.filter(a => a.starred).length} starred role${apps.filter(a => a.starred).length !== 1 ? 's' : ''}`
+                          : `Auto: ${apps.filter(a => a.fitScore >= 3).length} roles with fit >= 3`
+                      }
+                    </p>
                   </div>
                 )}
               </div>
@@ -913,31 +996,49 @@ export default function CareerCommandCenter() {
                 <p className="text-slate-400 text-sm py-4">No applications tracked yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {[...apps].sort((a, b) => (b.fitScore || 0) - (a.fitScore || 0)).map(app => (
-                    <div key={app.id} className="bg-slate-900/50 border border-slate-700/50 rounded-lg overflow-hidden">
+                  {[...apps].sort((a, b) => {
+                    // Starred first, then by fitScore
+                    if (a.starred && !b.starred) return -1;
+                    if (!a.starred && b.starred) return 1;
+                    return (b.fitScore || 0) - (a.fitScore || 0);
+                  }).map(app => (
+                    <div key={app.id} className={`bg-slate-900/50 border rounded-lg overflow-hidden ${app.starred ? 'border-amber-500/40' : 'border-slate-700/50'}`}>
                       {/* Collapsed View */}
-                      <button
-                        onClick={() => setExpandedApp(expandedApp === app.id ? null : app.id)}
-                        className="w-full p-4 flex items-center justify-between text-left"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                            app.fitScore >= 4 ? 'bg-amber-500/20 text-amber-400' :
-                            app.fitScore >= 3 ? 'bg-blue-500/20 text-blue-400' :
-                            'bg-slate-700 text-slate-400'
-                          }`}>
-                            {app.fitScore}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-white truncate">{app.title}</p>
-                            <p className="text-xs text-slate-400">{app.company} - {app.location}</p>
+                      <div className="flex items-center">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleStar(app.id); }}
+                          className="pl-4 pr-1 py-4 flex-shrink-0"
+                        >
+                          <Star className={`w-4 h-4 transition-colors ${app.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-600 hover:text-slate-400'}`} />
+                        </button>
+                        <button
+                          onClick={() => setExpandedApp(expandedApp === app.id ? null : app.id)}
+                          className="flex-1 p-4 pl-2 flex items-center justify-between text-left"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                              app.fitScore >= 4 ? 'bg-amber-500/20 text-amber-400' :
+                              app.fitScore >= 3 ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-slate-700 text-slate-400'
+                            }`}>
+                              {app.fitScore}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-white truncate">{app.title}</p>
+                              <p className="text-xs text-slate-400">{app.company} - {app.location}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <StatusBadge status={app.status} />
-                          {expandedApp === app.id ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-                        </div>
-                      </button>
+                          <div className="flex items-center gap-3 flex-shrink-0">
+                            {(app.contentCount || 0) > 0 && (
+                              <span className="text-xs text-emerald-400 flex items-center gap-1">
+                                <FileText className="w-3 h-3" />{app.contentCount} post{app.contentCount !== 1 ? 's' : ''}
+                              </span>
+                            )}
+                            <StatusBadge status={app.status} />
+                            {expandedApp === app.id ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                          </div>
+                        </button>
+                      </div>
 
                       {/* Expanded View */}
                       {expandedApp === app.id && (
