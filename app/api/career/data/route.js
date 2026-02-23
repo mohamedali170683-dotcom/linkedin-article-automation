@@ -13,7 +13,7 @@ async function getData() {
   } catch (e) {
     console.error('Failed to read career data:', e);
   }
-  return { apps: [], metrics: {}, posts: {} };
+  return { apps: [], metrics: {}, posts: {}, campaign: null };
 }
 
 async function saveDataToBlob(data) {

@@ -4,19 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Search, Loader2, Copy, Check, RefreshCw, Plus, Trash2,
   ChevronDown, ChevronUp, ExternalLink, BarChart3, FileText,
-  Target, Briefcase, TrendingUp, Users, Mic, Globe, ArrowLeft,
-  Sun, CheckCircle, X, Edit3, Save, Sparkles, Star
+  Target, Briefcase, TrendingUp, Globe, ArrowLeft, ArrowRight,
+  CheckCircle, X, Edit3, Save, Sparkles, Star, Send, Eye,
+  Calendar, Mail, Zap
 } from 'lucide-react';
 import Link from 'next/link';
-import { PILLARS, FIT_CRITERIA, WEEK_POSTS, STATUS_OPTIONS, MOHAMED_CONTEXT } from '../lib/career-data';
+import { PILLARS, FIT_CRITERIA, STATUS_OPTIONS, CONTENT_STATUSES, MOHAMED_CONTEXT, createCampaign } from '../lib/career-data';
 
-const CAMPAIGN_START = new Date('2026-02-21');
-
-function getCurrentWeek() {
-  const elapsed = Date.now() - CAMPAIGN_START.getTime();
-  const week = Math.ceil(elapsed / (7 * 86400000)) + 1;
-  return Math.max(1, Math.min(12, week));
-}
+// ============ HELPERS ============
 
 function PillarTag({ pillarId, small }) {
   const p = PILLARS.find(x => x.id === pillarId);
@@ -31,107 +26,122 @@ function PillarTag({ pillarId, small }) {
   );
 }
 
-function StatusBadge({ status }) {
-  const opt = STATUS_OPTIONS.find(s => s.value === status);
-  const color = opt?.color || '#64748b';
+function StepIndicator({ steps, current, onStepClick }) {
   return (
-    <span
-      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
-      style={{ backgroundColor: color + '20', color, border: `1px solid ${color}40` }}
-    >
-      {status}
-    </span>
-  );
-}
-
-function MetricCard({ label, value, target, onUpdate }) {
-  const pct = target > 0 ? Math.min(100, Math.round((value / target) * 100)) : 0;
-  return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-slate-400 font-medium">{label}</span>
-        <span className="text-xs text-slate-500">{pct}%</span>
-      </div>
-      <div className="text-2xl font-bold text-white font-mono mb-2">{value}</div>
-      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444' }}
-        />
-      </div>
-      <div className="text-xs text-slate-500 mt-1">Target: {target}</div>
+    <div className="flex items-center gap-1 w-full">
+      {steps.map((step, i) => (
+        <div key={i} className="flex items-center flex-1">
+          <button
+            onClick={() => onStepClick(i + 1)}
+            disabled={step.locked}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all w-full ${
+              current === i + 1
+                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                : step.done
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : step.locked
+                    ? 'bg-slate-800/50 text-slate-600 border border-slate-700/30 cursor-not-allowed'
+                    : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+            }`}
+          >
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+              current === i + 1 ? 'bg-amber-500 text-slate-900' :
+              step.done ? 'bg-emerald-500 text-white' :
+              'bg-slate-700 text-slate-400'
+            }`}>
+              {step.done ? <Check className="w-3 h-3" /> : i + 1}
+            </span>
+            <div className="text-left min-w-0">
+              <div className="truncate">{step.label}</div>
+              <div className="text-xs opacity-60 truncate">{step.desc}</div>
+            </div>
+          </button>
+          {i < steps.length - 1 && <div className="w-2 h-px bg-slate-700 flex-shrink-0 mx-1" />}
+        </div>
+      ))}
     </div>
   );
 }
 
+function getCampaignWeek(startDate) {
+  if (!startDate) return 1;
+  const elapsed = Date.now() - new Date(startDate).getTime();
+  const week = Math.ceil(elapsed / (7 * 86400000));
+  return Math.max(1, Math.min(12, week));
+}
+
+// ============ MAIN COMPONENT ============
+
 export default function CareerCommandCenter() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const currentWeek = getCurrentWeek();
-
-  // Persisted state
-  const [apps, setApps] = useState([]);
-  const [metrics, setMetrics] = useState({
-    impressions: 0, followers: 0, recruiters: 0, apps: 0,
-    interviews: 0, newsletter: 0, community: 0, speaking: 0,
-  });
-  const [posts, setPosts] = useState({});
+  // Core state
   const [isLoaded, setIsLoaded] = useState(false);
+  const [campaign, setCampaign] = useState(null);
+  const [apps, setApps] = useState([]); // tracked roles (shared across campaigns)
 
-  // Scanner state
-  const [scanQuery, setScanQuery] = useState('VP Marketing Germany');
+  // Step 1: Target
+  const [scanQuery, setScanQuery] = useState('VP Marketing');
   const [scanResults, setScanResults] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanEngine, setScanEngine] = useState('google_jobs');
   const [usedEngine, setUsedEngine] = useState('');
   const [scanError, setScanError] = useState('');
+  const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
 
-  // Content state
-  const [selectedContentWeek, setSelectedContentWeek] = useState(currentWeek);
+  // Step 2: Create
+  const [selectedWeek, setSelectedWeek] = useState(1);
   const [generatedDraft, setGeneratedDraft] = useState('');
   const [generatingFor, setGeneratingFor] = useState(null);
+  const [editingDraft, setEditingDraft] = useState(null);
+  const [editText, setEditText] = useState('');
+
+  // Step 3: Publish
   const [copied, setCopied] = useState(false);
-  const [customPillar, setCustomPillar] = useState('ai');
-  const [customTitle, setCustomTitle] = useState('');
-  const [customAngle, setCustomAngle] = useState('');
-  const [alignedTo, setAlignedTo] = useState([]);
-  const [lastGeneratedPost, setLastGeneratedPost] = useState(null);
-  const [selectedTargetRoles, setSelectedTargetRoles] = useState([]); // manually picked roles for alignment
+  const [publishingTo, setPublishingTo] = useState(null);
+  const [publishStatus, setPublishStatus] = useState(null);
 
-  // Tracker state
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [expandedApp, setExpandedApp] = useState(null);
-  const [newApp, setNewApp] = useState({ title: '', company: '', location: '', url: '', requirements: '', fitChecks: [], notes: '' });
-
-  // Metrics editing
+  // Step 4: Track
   const [editingMetrics, setEditingMetrics] = useState(false);
   const [tempMetrics, setTempMetrics] = useState({});
+  const [kitStats, setKitStats] = useState(null);
 
-  // Load persisted data
+  // Load data
   useEffect(() => {
     fetch('/api/career/data')
       .then(r => r.json())
       .then(data => {
         if (data.apps) setApps(data.apps);
-        if (data.metrics) setMetrics(prev => ({ ...prev, ...data.metrics }));
-        if (data.posts) setPosts(data.posts);
+        if (data.campaign) setCampaign(data.campaign);
         setIsLoaded(true);
       })
       .catch(() => setIsLoaded(true));
   }, []);
 
-  // Persist data on change
-  const persistData = useCallback((newApps, newMetrics, newPosts) => {
+  // Persist
+  const persist = useCallback((newApps, newCampaign) => {
     const a = newApps ?? apps;
-    const m = newMetrics ?? metrics;
-    const p = newPosts ?? posts;
+    const c = newCampaign ?? campaign;
     fetch('/api/career/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apps: a, metrics: m, posts: p }),
+      body: JSON.stringify({ apps: a, campaign: c }),
     }).catch(console.error);
-  }, [apps, metrics, posts]);
+  }, [apps, campaign]);
 
-  // Scanner
+  // Derived
+  const currentStep = campaign?.currentStep || 1;
+  const campaignWeek = campaign ? getCampaignWeek(campaign.startDate) : 1;
+  const starredRoles = apps.filter(a => a.starred);
+  const strategy = campaign?.strategy;
+
+  const setStep = (step) => {
+    if (!campaign) return;
+    const updated = { ...campaign, currentStep: step };
+    setCampaign(updated);
+    persist(null, updated);
+  };
+
+  // ============ STEP 1: SCANNER ============
+
   const scanMarket = async () => {
     setIsScanning(true);
     setScanResults([]);
@@ -144,191 +154,220 @@ export default function CareerCommandCenter() {
         body: JSON.stringify({ query: scanQuery, engine: scanEngine }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setScanError(data.error || `Scan failed (${res.status})`);
-        return;
-      }
+      if (!res.ok) { setScanError(data.error || `Scan failed (${res.status})`); return; }
       setScanResults(data.jobs || []);
       setUsedEngine(data.engine || scanEngine);
     } catch (e) {
-      console.error('Scan failed:', e);
-      setScanError('Network error — check console for details');
+      setScanError('Network error');
     } finally {
       setIsScanning(false);
     }
   };
 
   const addToTracker = (job) => {
-    const exists = apps.some(a => a.title === job.title && a.company === job.company);
-    if (exists) return;
-    const newApp = {
-      id: Date.now().toString(),
-      title: job.title,
-      company: job.company,
-      location: job.location,
-      url: job.url || '',
-      requirements: job.requirements || [],
-      fitChecks: [],
-      fitScore: job.fitScore || 0,
-      status: 'Identified',
-      notes: '',
-      starred: false,
-      contentCount: 0,
+    if (apps.some(a => a.title === job.title && a.company === job.company)) return;
+    const app = {
+      id: Date.now().toString(), title: job.title, company: job.company,
+      location: job.location, url: job.url || '', requirements: job.requirements || [],
+      fitScore: job.fitScore || 0, status: 'Identified', notes: '',
+      starred: false, contentCount: 0,
     };
-    const updated = [...apps, newApp];
+    const updated = [...apps, app];
     setApps(updated);
-    persistData(updated, null, null);
+    persist(updated, null);
   };
 
   const toggleStar = (id) => {
     const updated = apps.map(a => a.id === id ? { ...a, starred: !a.starred } : a);
     setApps(updated);
-    persistData(updated, null, null);
-  };
-
-  const toggleTargetRole = (id) => {
-    setSelectedTargetRoles(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
-  // Content generation — uses manually selected roles, then starred, then fitScore >= 3
-  const getTargetRoles = () => {
-    // Priority 1: manually selected roles in Content Engine
-    if (selectedTargetRoles.length > 0) {
-      return apps.filter(a => selectedTargetRoles.includes(a.id));
-    }
-    // Priority 2: starred roles
-    const starred = apps.filter(a => a.starred);
-    if (starred.length > 0) return starred;
-    // Priority 3: fitScore >= 3
-    return apps.filter(a => a.fitScore >= 3);
-  };
-
-  const generateDraft = async (post, angle) => {
-    setGeneratingFor(post.title);
-    setGeneratedDraft('');
-    setAlignedTo([]);
-    setLastGeneratedPost(post.title);
-    try {
-      const targetRoles = getTargetRoles();
-      const res = await fetch('/api/career/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: post.title,
-          pillar: post.pillar,
-          requirement: post.req,
-          angle: angle || '',
-          targetRoles: targetRoles.map(r => ({
-            title: r.title,
-            company: r.company,
-            requirements: r.requirements,
-            fitScore: r.fitScore,
-          })),
-        }),
-      });
-      const data = await res.json();
-      setGeneratedDraft(data.draft || 'Generation failed');
-      setAlignedTo(data.alignedTo || []);
-
-      // Increment contentCount for each targeted role
-      if (targetRoles.length > 0) {
-        const targetIds = targetRoles.map(r => r.id);
-        const updated = apps.map(a =>
-          targetIds.includes(a.id) ? { ...a, contentCount: (a.contentCount || 0) + 1 } : a
-        );
-        setApps(updated);
-        persistData(updated, null, null);
-      }
-    } catch (e) {
-      setGeneratedDraft('Error: ' + e.message);
-    } finally {
-      setGeneratingFor(null);
-    }
-  };
-
-  const generateCustom = async () => {
-    if (!customTitle.trim()) return;
-    const post = { title: customTitle, pillar: customPillar, req: '', format: 'text' };
-    await generateDraft(post, customAngle);
-  };
-
-  const markPublished = (postTitle) => {
-    const updated = { ...posts, [postTitle]: true };
-    setPosts(updated);
-    persistData(null, null, updated);
-  };
-
-  const copyDraft = () => {
-    navigator.clipboard.writeText(generatedDraft);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // Tracker
-  const addApplication = () => {
-    const app = {
-      id: Date.now().toString(),
-      title: newApp.title,
-      company: newApp.company,
-      location: newApp.location,
-      url: newApp.url,
-      requirements: newApp.requirements.split(',').map(r => r.trim()).filter(Boolean),
-      fitChecks: newApp.fitChecks,
-      fitScore: newApp.fitChecks.length,
-      status: 'Identified',
-      notes: newApp.notes,
-      starred: false,
-      contentCount: 0,
-    };
-    const updated = [...apps, app];
-    setApps(updated);
-    persistData(updated, null, null);
-    setNewApp({ title: '', company: '', location: '', url: '', requirements: '', fitChecks: [], notes: '' });
-    setShowAddForm(false);
-  };
-
-  const updateAppStatus = (id, status) => {
-    const updated = apps.map(a => a.id === id ? { ...a, status } : a);
-    setApps(updated);
-    persistData(updated, null, null);
-  };
-
-  const updateAppNotes = (id, notes) => {
-    const updated = apps.map(a => a.id === id ? { ...a, notes } : a);
-    setApps(updated);
-    persistData(updated, null, null);
+    persist(updated, null);
   };
 
   const removeApp = (id) => {
     const updated = apps.filter(a => a.id !== id);
     setApps(updated);
-    persistData(updated, null, null);
+    persist(updated, null);
   };
 
-  const saveMetrics = () => {
-    const updated = { ...metrics, ...tempMetrics };
-    setMetrics(updated);
-    persistData(null, updated, null);
+  // Generate strategy from starred roles
+  const generateStrategy = async () => {
+    if (starredRoles.length === 0) return;
+    setIsGeneratingStrategy(true);
+    try {
+      const res = await fetch('/api/career/strategy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetRoles: starredRoles }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Strategy generation failed');
+
+      const now = new Date();
+      const quarterLabel = `Q${Math.ceil((now.getMonth() + 1) / 3)} ${now.getFullYear()}`;
+      const newCampaign = createCampaign(quarterLabel, now.toISOString().split('T')[0]);
+      newCampaign.targetRoles = starredRoles;
+      newCampaign.strategy = data.strategy;
+      newCampaign.currentStep = 2;
+
+      setCampaign(newCampaign);
+      persist(null, newCampaign);
+    } catch (e) {
+      alert('Strategy generation failed: ' + e.message);
+    } finally {
+      setIsGeneratingStrategy(false);
+    }
+  };
+
+  // ============ STEP 2: CREATE ============
+
+  const weekData = strategy?.weeks?.find(w => w.week === selectedWeek);
+
+  const generateContent = async (contentKey, title, pillar, type, angle) => {
+    setGeneratingFor(contentKey);
+    try {
+      const res = await fetch('/api/career/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title, pillar, type,
+          angle: angle || '',
+          targetRoles: (campaign?.targetRoles || []).map(r => ({
+            title: r.title, company: r.company,
+            requirements: r.requirements, fitScore: r.fitScore,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const updatedCampaign = { ...campaign };
+      updatedCampaign.content = {
+        ...updatedCampaign.content,
+        [contentKey]: {
+          type,
+          draft: data.draft,
+          status: CONTENT_STATUSES.GENERATED,
+          generatedAt: new Date().toISOString(),
+          publishedAt: null,
+          kitBroadcastId: null,
+        },
+      };
+      setCampaign(updatedCampaign);
+      persist(null, updatedCampaign);
+      setGeneratedDraft(data.draft);
+    } catch (e) {
+      alert('Generation failed: ' + e.message);
+    } finally {
+      setGeneratingFor(null);
+    }
+  };
+
+  const saveEdit = (contentKey) => {
+    const updatedCampaign = { ...campaign };
+    updatedCampaign.content = {
+      ...updatedCampaign.content,
+      [contentKey]: {
+        ...updatedCampaign.content[contentKey],
+        draft: editText,
+        status: CONTENT_STATUSES.EDITED,
+      },
+    };
+    setCampaign(updatedCampaign);
+    persist(null, updatedCampaign);
+    setEditingDraft(null);
+  };
+
+  // ============ STEP 3: PUBLISH ============
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const publishToKit = async (contentKey) => {
+    const content = campaign?.content?.[contentKey];
+    if (!content) return;
+    setPublishingTo(contentKey);
+    setPublishStatus(null);
+    try {
+      const res = await fetch('/api/publish/kit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: contentKey.replace(/-/g, ' '),
+          subtitle: `Career Campaign - ${campaign.quarter}`,
+          content: content.draft,
+          charts: [],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const updatedCampaign = { ...campaign };
+      updatedCampaign.content[contentKey] = {
+        ...updatedCampaign.content[contentKey],
+        kitBroadcastId: data.broadcastId,
+        status: CONTENT_STATUSES.PUBLISHED,
+        publishedAt: new Date().toISOString(),
+      };
+      setCampaign(updatedCampaign);
+      persist(null, updatedCampaign);
+      setPublishStatus({ success: true, url: data.dashboardUrl });
+    } catch (e) {
+      setPublishStatus({ success: false, error: e.message });
+    } finally {
+      setPublishingTo(null);
+    }
+  };
+
+  const markPublished = (contentKey) => {
+    const updatedCampaign = { ...campaign };
+    updatedCampaign.content[contentKey] = {
+      ...updatedCampaign.content[contentKey],
+      status: CONTENT_STATUSES.PUBLISHED,
+      publishedAt: new Date().toISOString(),
+    };
+    setCampaign(updatedCampaign);
+    persist(null, updatedCampaign);
+  };
+
+  // ============ STEP 4: TRACK ============
+
+  const saveWeekMetrics = (week) => {
+    const updatedCampaign = { ...campaign };
+    updatedCampaign.metrics = {
+      ...updatedCampaign.metrics,
+      [`week${week}`]: tempMetrics,
+    };
+    setCampaign(updatedCampaign);
+    persist(null, updatedCampaign);
     setEditingMetrics(false);
   };
 
-  // Derived
-  const weekPosts = WEEK_POSTS.filter(p => p.week === selectedContentWeek);
-  const thisWeekPosts = WEEK_POSTS.filter(p => p.week === currentWeek);
-  const publishedCount = Object.values(posts).filter(Boolean).length;
-  const avgFit = apps.length > 0 ? (apps.reduce((s, a) => s + (a.fitScore || 0), 0) / apps.length).toFixed(1) : '0';
+  const fetchKitStats = async () => {
+    try {
+      const res = await fetch('/api/career/kit-stats');
+      const data = await res.json();
+      if (res.ok) setKitStats(data);
+    } catch {}
+  };
 
-  const M3_TARGETS = { impressions: 500, followers: 200, recruiters: 5, apps: 15, interviews: 2, newsletter: 100, community: 20, speaking: 1 };
-  const M6_TARGETS = { impressions: 2000, followers: 800, recruiters: 10, apps: 40, interviews: 6, newsletter: 500, community: 50, speaking: 3 };
+  const startNewQuarter = () => {
+    setCampaign(null);
+    persist(null, null);
+  };
 
-  const TABS = [
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-    { id: 'scanner', label: 'Job Scanner', icon: Search },
-    { id: 'content', label: 'Content Engine', icon: FileText },
-    { id: 'tracker', label: 'Tracker', icon: Target },
+  // ============ STEP CONFIG ============
+
+  const steps = [
+    { label: 'Target', desc: 'Scan & select roles', done: !!strategy, locked: false },
+    { label: 'Create', desc: 'Generate content', done: false, locked: !strategy },
+    { label: 'Publish', desc: 'Review & send', done: false, locked: !strategy },
+    { label: 'Track', desc: 'Measure results', done: false, locked: !strategy },
   ];
+
+  // ============ RENDER ============
 
   if (!isLoaded) {
     return (
@@ -344,56 +383,413 @@ export default function CareerCommandCenter() {
       <header className="bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-slate-400 hover:text-white">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
+            <Link href="/" className="text-slate-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></Link>
             <div>
               <h1 className="text-xl font-semibold text-white flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-amber-400" />
-                Career Command Center
+                <Briefcase className="w-5 h-5 text-amber-400" />Career Command Center
               </h1>
-              <p className="text-sm text-slate-400">VP Marketing / CMO Campaign - DACH</p>
+              <p className="text-sm text-slate-400">
+                {campaign ? `${campaign.quarter} Campaign - Week ${campaignWeek} of 12` : 'Start a new quarterly campaign'}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-medium border border-amber-500/30">
-              Week {currentWeek} of 12
-            </span>
-          </div>
+          {campaign && (
+            <button onClick={startNewQuarter} className="text-xs text-slate-500 hover:text-red-400 border border-slate-700 px-3 py-1.5 rounded-lg">
+              New Quarter
+            </button>
+          )}
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <div className="bg-slate-900/50 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex overflow-x-auto">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'border-amber-400 text-amber-400'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
+      {/* Step Indicator */}
+      <div className="bg-slate-900/50 border-b border-slate-800 px-6 py-3">
+        <div className="max-w-7xl mx-auto">
+          <StepIndicator steps={steps} current={currentStep} onStepClick={setStep} />
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        {/* ========== DASHBOARD TAB ========== */}
-        {activeTab === 'dashboard' && (
+
+        {/* ========== STEP 1: TARGET ========== */}
+        {currentStep === 1 && (
           <div className="space-y-6">
-            {/* Status Row */}
+            {/* Scanner */}
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+              <h3 className="text-lg font-semibold text-white mb-1">Scan the Market</h3>
+              <p className="text-sm text-slate-400 mb-4">Find VP Marketing / CMO roles in DACH. Star the ones you want to target this quarter.</p>
+              <div className="flex gap-3">
+                <input type="text" value={scanQuery} onChange={e => setScanQuery(e.target.value)}
+                  placeholder="Search for VP Marketing, Leiter Marketing..."
+                  className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
+                  onKeyDown={e => { if (e.key === 'Enter' && !isScanning) scanMarket(); }} />
+                <button onClick={scanMarket} disabled={isScanning}
+                  className="px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg font-medium flex items-center gap-2 hover:bg-amber-400 disabled:opacity-50">
+                  {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  {isScanning ? 'Scanning...' : 'Scan'}
+                </button>
+              </div>
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-xs text-slate-500">Source:</span>
+                <button onClick={() => setScanEngine('google_jobs')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${scanEngine === 'google_jobs' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}>
+                  <Globe className="w-3 h-3 inline mr-1" />Google Jobs
+                </button>
+                <button onClick={() => setScanEngine('claude')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${scanEngine === 'claude' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}>
+                  <Sparkles className="w-3 h-3 inline mr-1" />AI Deep Search
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {['VP Marketing', 'Leiter Marketing', 'Marketing Leitung', 'Marketingleiter', 'Leiter Digital Marketing', 'Leiter Online Marketing'].map(q => (
+                  <button key={q} onClick={() => { setScanQuery(q); }} className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-slate-600">{q}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Scanning/Error/Empty */}
+            {isScanning && (
+              <div className="flex flex-col items-center py-12">
+                <Loader2 className="w-10 h-10 animate-spin text-amber-400 mb-4" />
+                <p className="text-slate-300">{scanEngine === 'google_jobs' ? 'Searching Google Jobs...' : 'AI deep scanning...'}</p>
+              </div>
+            )}
+            {scanError && !isScanning && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 text-center">
+                <p className="text-red-400 font-medium">Scan failed</p>
+                <p className="text-sm text-red-400/70 mt-1">{scanError}</p>
+              </div>
+            )}
+
+            {/* Scan Results */}
+            {scanResults.length > 0 && !isScanning && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-slate-400">{scanResults.length} results {usedEngine && `via ${usedEngine === 'google_jobs' ? 'Google Jobs' : 'AI Search'}`}</h4>
+                {scanResults.sort((a, b) => (b.fitScore || 0) - (a.fitScore || 0)).map((job, i) => (
+                  <div key={i} className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-sm font-semibold text-white truncate">{job.title}</h4>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0 ${
+                          job.fitScore >= 4 ? 'bg-amber-500/20 text-amber-400' : job.fitScore >= 3 ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700 text-slate-400'
+                        }`}>{job.fitScore}/5</span>
+                      </div>
+                      <p className="text-xs text-slate-400">{job.company} - {job.location}</p>
+                      {job.requirements?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {job.requirements.slice(0, 3).map((r, j) => (
+                            <span key={j} className="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs">{r}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={() => addToTracker(job)}
+                      disabled={apps.some(a => a.title === job.title && a.company === job.company)}
+                      className="px-3 py-2 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium hover:bg-amber-400 disabled:opacity-30 flex items-center gap-1 flex-shrink-0">
+                      <Plus className="w-3 h-3" />{apps.some(a => a.title === job.title && a.company === job.company) ? 'Added' : 'Track'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Tracked Roles */}
+            {apps.length > 0 && (
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                <h3 className="text-sm font-medium text-slate-400 mb-3">Tracked Roles ({apps.length}) — Star your targets for this quarter</h3>
+                <div className="space-y-2">
+                  {[...apps].sort((a, b) => {
+                    if (a.starred && !b.starred) return -1;
+                    if (!a.starred && b.starred) return 1;
+                    return (b.fitScore || 0) - (a.fitScore || 0);
+                  }).map(app => (
+                    <div key={app.id} className={`flex items-center gap-3 p-3 rounded-lg ${app.starred ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-900/50 border border-slate-700/50'}`}>
+                      <button onClick={() => toggleStar(app.id)}>
+                        <Star className={`w-4 h-4 ${app.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-600 hover:text-slate-400'}`} />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white truncate">{app.title}</p>
+                        <p className="text-xs text-slate-400">{app.company} - {app.location}</p>
+                      </div>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                        app.fitScore >= 4 ? 'bg-amber-500/20 text-amber-400' : app.fitScore >= 3 ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700 text-slate-400'
+                      }`}>{app.fitScore}/5</span>
+                      <button onClick={() => removeApp(app.id)} className="text-slate-600 hover:text-red-400">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Generate Strategy CTA */}
+                {starredRoles.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-slate-700">
+                    <button onClick={generateStrategy} disabled={isGeneratingStrategy}
+                      className="w-full px-5 py-3 bg-amber-500 text-slate-900 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-amber-400 disabled:opacity-50 text-sm">
+                      {isGeneratingStrategy ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" />Generating 12-week strategy from {starredRoles.length} target roles...</>
+                      ) : (
+                        <><Zap className="w-4 h-4" />Generate Quarterly Strategy ({starredRoles.length} starred role{starredRoles.length !== 1 ? 's' : ''})</>
+                      )}
+                    </button>
+                    <p className="text-xs text-slate-500 mt-2 text-center">AI will create a 12-week content calendar with LinkedIn posts + newsletter articles aligned to these roles</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== STEP 2: CREATE ========== */}
+        {currentStep === 2 && strategy && (
+          <div className="space-y-6">
+            {/* Week Selector */}
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+              <h3 className="text-lg font-semibold text-white mb-3">Content Calendar — {campaign.quarter}</h3>
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(w => {
+                  const wd = strategy.weeks?.find(x => x.week === w);
+                  const allContent = [
+                    ...(wd?.linkedin || []).map((_, j) => `w${w}-linkedin-${j}`),
+                    wd?.newsletter ? `w${w}-newsletter` : null,
+                  ].filter(Boolean);
+                  const allDone = allContent.length > 0 && allContent.every(k => campaign.content?.[k]?.status === CONTENT_STATUSES.PUBLISHED);
+                  const hasDrafts = allContent.some(k => campaign.content?.[k]);
+                  return (
+                    <button key={w} onClick={() => setSelectedWeek(w)}
+                      className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        selectedWeek === w ? 'bg-amber-500 text-slate-900' :
+                        w === campaignWeek ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                        hasDrafts ? 'bg-slate-700 text-slate-200' :
+                        'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+                      }`}>
+                      W{w}
+                      {allDone && <CheckCircle className="w-3 h-3 absolute -top-1 -right-1 text-green-400" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Week Content */}
+            {weekData && (
+              <div className="space-y-4">
+                {/* LinkedIn Posts */}
+                {(weekData.linkedin || []).map((post, i) => {
+                  const key = `w${selectedWeek}-linkedin-${i}`;
+                  const existing = campaign.content?.[key];
+                  return (
+                    <div key={key} className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">LinkedIn</span>
+                            <PillarTag pillarId={post.pillar} small />
+                            {existing?.status === CONTENT_STATUSES.PUBLISHED && (
+                              <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Published</span>
+                            )}
+                          </div>
+                          <h4 className="text-sm font-semibold text-white">{post.title}</h4>
+                          {post.angle && <p className="text-xs text-slate-400 mt-1">Angle: {post.angle}</p>}
+                          {post.alignsTo && <p className="text-xs text-amber-400/60 mt-1">Addresses: {post.alignsTo.join(', ')}</p>}
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          {existing ? (
+                            <>
+                              <button onClick={() => { setEditingDraft(key); setEditText(existing.draft); }}
+                                className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
+                                <Edit3 className="w-3 h-3" />Edit
+                              </button>
+                              <button onClick={() => { setGeneratedDraft(existing.draft); }}
+                                className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
+                                <Eye className="w-3 h-3" />View
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => generateContent(key, post.title, post.pillar, 'linkedin', post.angle)}
+                              disabled={generatingFor !== null}
+                              className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400 disabled:opacity-50">
+                              {generatingFor === key ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                              {generatingFor === key ? 'Generating...' : 'Generate'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Newsletter */}
+                {weekData.newsletter && (() => {
+                  const key = `w${selectedWeek}-newsletter`;
+                  const existing = campaign.content?.[key];
+                  const nl = weekData.newsletter;
+                  return (
+                    <div className="bg-slate-800 border border-amber-500/20 rounded-xl p-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded flex items-center gap-1">
+                              <Mail className="w-3 h-3" />Newsletter
+                            </span>
+                            <PillarTag pillarId={nl.pillar} small />
+                            {existing?.status === CONTENT_STATUSES.PUBLISHED && (
+                              <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Sent</span>
+                            )}
+                          </div>
+                          <h4 className="text-sm font-semibold text-white">{nl.title}</h4>
+                          {nl.angle && <p className="text-xs text-slate-400 mt-1">Angle: {nl.angle}</p>}
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          {existing ? (
+                            <>
+                              <button onClick={() => { setEditingDraft(key); setEditText(existing.draft); }}
+                                className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
+                                <Edit3 className="w-3 h-3" />Edit
+                              </button>
+                              <button onClick={() => { setGeneratedDraft(existing.draft); }}
+                                className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
+                                <Eye className="w-3 h-3" />View
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => generateContent(key, nl.title, nl.pillar, 'newsletter', nl.angle)}
+                              disabled={generatingFor !== null}
+                              className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400 disabled:opacity-50">
+                              {generatingFor === key ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                              {generatingFor === key ? 'Generating...' : 'Generate Article'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Edit Modal */}
+            {editingDraft && (
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-slate-400">Editing: {editingDraft}</h4>
+                  <div className="flex gap-2">
+                    <button onClick={() => saveEdit(editingDraft)} className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1">
+                      <Save className="w-3 h-3" />Save
+                    </button>
+                    <button onClick={() => setEditingDraft(null)} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs">Cancel</button>
+                  </div>
+                </div>
+                <textarea value={editText} onChange={e => setEditText(e.target.value)} rows={16}
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-slate-200 text-sm leading-relaxed font-[var(--font-dm-sans)]" />
+              </div>
+            )}
+
+            {/* Preview */}
+            {generatedDraft && !editingDraft && (
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-slate-400">Preview</h4>
+                  <div className="flex gap-2">
+                    <button onClick={() => copyToClipboard(generatedDraft)}
+                      className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400">
+                      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}{copied ? 'Copied!' : 'Copy'}
+                    </button>
+                    <button onClick={() => setGeneratedDraft('')} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs">Close</button>
+                  </div>
+                </div>
+                <div className="bg-slate-900 rounded-lg p-5 border border-slate-700">
+                  <pre className="text-sm text-slate-200 whitespace-pre-wrap font-[var(--font-dm-sans)] leading-relaxed">{generatedDraft}</pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== STEP 3: PUBLISH ========== */}
+        {currentStep === 3 && strategy && (
+          <div className="space-y-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+              <h3 className="text-lg font-semibold text-white mb-1">Review & Publish</h3>
+              <p className="text-sm text-slate-400 mb-4">Review generated content, then publish. LinkedIn = copy to clipboard. Newsletter = send to Kit as draft.</p>
+            </div>
+
+            {/* Content Queue */}
+            {strategy.weeks?.map(w => {
+              const allKeys = [
+                ...(w.linkedin || []).map((_, j) => ({ key: `w${w.week}-linkedin-${j}`, type: 'linkedin', title: w.linkedin[j]?.title })),
+                w.newsletter ? { key: `w${w.week}-newsletter`, type: 'newsletter', title: w.newsletter.title } : null,
+              ].filter(Boolean).filter(item => campaign.content?.[item.key]);
+
+              if (allKeys.length === 0) return null;
+
+              return (
+                <div key={w.week} className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                  <h4 className="text-xs font-medium text-slate-500 mb-3">Week {w.week}</h4>
+                  <div className="space-y-3">
+                    {allKeys.map(({ key, type, title }) => {
+                      const content = campaign.content[key];
+                      const isPublished = content.status === CONTENT_STATUSES.PUBLISHED;
+                      return (
+                        <div key={key} className={`flex items-center justify-between p-3 rounded-lg border ${isPublished ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900/50 border-slate-700/50'}`}>
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {isPublished ? <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" /> : <div className="w-4 h-4 rounded-full border-2 border-slate-600 flex-shrink-0" />}
+                            <div className="min-w-0">
+                              <p className="text-sm text-white truncate">{title}</p>
+                              <span className={`text-xs ${type === 'newsletter' ? 'text-amber-400' : 'text-blue-400'}`}>{type === 'newsletter' ? 'Newsletter' : 'LinkedIn'}</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 flex-shrink-0">
+                            {!isPublished && type === 'linkedin' && (
+                              <>
+                                <button onClick={() => copyToClipboard(content.draft)}
+                                  className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-blue-400">
+                                  <Copy className="w-3 h-3" />Copy for LinkedIn
+                                </button>
+                                <button onClick={() => markPublished(key)}
+                                  className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-emerald-500">
+                                  <Check className="w-3 h-3" />Mark Posted
+                                </button>
+                              </>
+                            )}
+                            {!isPublished && type === 'newsletter' && (
+                              <button onClick={() => publishToKit(key)} disabled={publishingTo === key}
+                                className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400 disabled:opacity-50">
+                                {publishingTo === key ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                                {publishingTo === key ? 'Sending...' : 'Send to Kit'}
+                              </button>
+                            )}
+                            {isPublished && <span className="text-xs text-green-400">Done</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {publishStatus && (
+              <div className={`p-4 rounded-xl border ${publishStatus.success ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                {publishStatus.success ? (
+                  <p className="text-sm text-emerald-400">Sent to Kit as draft. <a href={publishStatus.url} target="_blank" rel="noopener noreferrer" className="underline">Open Kit dashboard</a></p>
+                ) : (
+                  <p className="text-sm text-red-400">Failed: {publishStatus.error}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== STEP 4: TRACK ========== */}
+        {currentStep === 4 && strategy && (
+          <div className="space-y-6">
+            {/* Campaign Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Current Week', value: `${currentWeek} / 12`, icon: TrendingUp },
-                { label: 'Posts Published', value: publishedCount, icon: FileText },
-                { label: 'Total Applications', value: apps.length, icon: Briefcase },
-                { label: 'Avg Fit Score', value: avgFit, icon: Target },
+                { label: 'Week', value: `${campaignWeek} / 12`, icon: Calendar },
+                { label: 'Content Created', value: Object.keys(campaign.content || {}).length, icon: FileText },
+                { label: 'Published', value: Object.values(campaign.content || {}).filter(c => c.status === CONTENT_STATUSES.PUBLISHED).length, icon: CheckCircle },
+                { label: 'Target Roles', value: campaign.targetRoles?.length || 0, icon: Target },
               ].map((stat, i) => (
                 <div key={i} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -405,713 +801,145 @@ export default function CareerCommandCenter() {
               ))}
             </div>
 
-            {/* This Week's Content */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-4">This Week's Content</h3>
-              {thisWeekPosts.length === 0 ? (
-                <p className="text-slate-400 text-sm">No posts scheduled for this week.</p>
-              ) : (
-                <div className="space-y-3">
-                  {thisWeekPosts.map((post, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                      <div className="flex items-center gap-3">
-                        {posts[post.title] ? (
-                          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0" />
-                        )}
-                        <div>
-                          <p className="text-sm text-white font-medium">{post.title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <PillarTag pillarId={post.pillar} small />
-                            <span className="text-xs text-slate-500 px-1.5 py-0.5 bg-slate-800 rounded">{post.format}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Success Metrics */}
+            {/* Weekly Metrics Input */}
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Success Metrics (Month 3 Targets)</h3>
+                <h3 className="text-lg font-semibold text-white">Week {campaignWeek} Metrics</h3>
                 {editingMetrics ? (
                   <div className="flex gap-2">
-                    <button onClick={saveMetrics} className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-sm font-medium flex items-center gap-1">
-                      <Save className="w-3 h-3" /> Save
+                    <button onClick={() => saveWeekMetrics(campaignWeek)} className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-sm font-medium flex items-center gap-1">
+                      <Save className="w-3 h-3" />Save
                     </button>
-                    <button onClick={() => setEditingMetrics(false)} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-sm">
-                      Cancel
-                    </button>
+                    <button onClick={() => setEditingMetrics(false)} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-sm">Cancel</button>
                   </div>
                 ) : (
-                  <button onClick={() => { setTempMetrics({ ...metrics }); setEditingMetrics(true); }} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-sm flex items-center gap-1 hover:bg-slate-700">
-                    <Edit3 className="w-3 h-3" /> Update Metrics
+                  <button onClick={() => {
+                    setTempMetrics(campaign.metrics?.[`week${campaignWeek}`] || { impressions: 0, profileViews: 0, connections: 0, companyEngagements: '' });
+                    setEditingMetrics(true);
+                  }} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-sm flex items-center gap-1 hover:bg-slate-700">
+                    <Edit3 className="w-3 h-3" />Update
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(M3_TARGETS).map(([key, target]) => (
-                  <div key={key}>
-                    {editingMetrics ? (
-                      <div className="bg-slate-900 border border-slate-600 rounded-xl p-4">
-                        <label className="text-xs text-slate-400 font-medium capitalize block mb-2">{key}</label>
-                        <input
-                          type="number"
-                          value={tempMetrics[key] || 0}
-                          onChange={e => setTempMetrics({ ...tempMetrics, [key]: parseInt(e.target.value) || 0 })}
-                          className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white font-mono text-lg"
-                        />
-                        <div className="text-xs text-slate-500 mt-1">Target: {target}</div>
+              {editingMetrics ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { key: 'impressions', label: 'LinkedIn Impressions' },
+                      { key: 'profileViews', label: 'Profile Views' },
+                      { key: 'connections', label: 'New Connections' },
+                    ].map(m => (
+                      <div key={m.key}>
+                        <label className="text-xs text-slate-400 mb-1 block">{m.label}</label>
+                        <input type="number" value={tempMetrics[m.key] || 0}
+                          onChange={e => setTempMetrics({ ...tempMetrics, [m.key]: parseInt(e.target.value) || 0 })}
+                          className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white font-mono" />
                       </div>
-                    ) : (
-                      <MetricCard
-                        label={key.charAt(0).toUpperCase() + key.slice(1)}
-                        value={metrics[key] || 0}
-                        target={target}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Application Pipeline */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-4">Application Pipeline</h3>
-              {apps.length === 0 ? (
-                <p className="text-slate-400 text-sm">No applications tracked yet. Use the Scanner to find roles.</p>
-              ) : (
-                <div className="flex flex-wrap gap-3">
-                  {STATUS_OPTIONS.map(s => {
-                    const count = apps.filter(a => a.status === s.value).length;
-                    return (
-                      <div key={s.value} className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                        <span className="text-sm text-slate-300">{s.value}</span>
-                        <span className="text-sm font-bold text-white font-mono">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ========== SCANNER TAB ========== */}
-        {activeTab === 'scanner' && (
-          <div className="space-y-6">
-            {/* Search */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-4">Job Scanner</h3>
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={scanQuery}
-                  onChange={e => setScanQuery(e.target.value)}
-                  placeholder="Search for VP Marketing, CMO, Head of Marketing..."
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
-                  onKeyDown={e => { if (e.key === 'Enter' && !isScanning) scanMarket(); }}
-                />
-                <button
-                  onClick={scanMarket}
-                  disabled={isScanning}
-                  className="px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg font-medium flex items-center gap-2 hover:bg-amber-400 disabled:opacity-50"
-                >
-                  {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                  {isScanning ? 'Scanning...' : 'Scan Market'}
-                </button>
-              </div>
-
-              {/* Engine toggle */}
-              <div className="flex items-center gap-3 mt-3">
-                <span className="text-xs text-slate-500">Source:</span>
-                <button
-                  onClick={() => setScanEngine('google_jobs')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    scanEngine === 'google_jobs'
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                  }`}
-                >
-                  <Globe className="w-3 h-3 inline mr-1" />Google Jobs
-                </button>
-                <button
-                  onClick={() => setScanEngine('claude')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    scanEngine === 'claude'
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                  }`}
-                >
-                  <Sparkles className="w-3 h-3 inline mr-1" />AI Deep Search
-                </button>
-              </div>
-
-              {/* Quick filters */}
-              <div className="flex flex-wrap gap-2 mt-3">
-                {[
-                  'VP Marketing',
-                  'Leiter Marketing',
-                  'Marketing Leitung',
-                  'Marketingleiter',
-                  'Leiter Digital Marketing',
-                  'Leiter Online Marketing',
-                ].map(q => (
-                  <button
-                    key={q}
-                    onClick={() => setScanQuery(q)}
-                    className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded-lg text-xs hover:bg-slate-600"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Scanning indicator */}
-            {isScanning && (
-              <div className="flex flex-col items-center py-12">
-                <Loader2 className="w-10 h-10 animate-spin text-amber-400 mb-4" />
-                <p className="text-slate-300">
-                  {scanEngine === 'google_jobs' ? 'Searching Google Jobs (LinkedIn, Indeed, StepStone)...' : 'AI deep scanning the web...'}
-                </p>
-                <p className="text-sm text-slate-500 mt-1">
-                  {scanEngine === 'google_jobs' ? '~3-5 seconds' : '~15-30 seconds'}
-                </p>
-              </div>
-            )}
-
-            {/* Error */}
-            {scanError && !isScanning && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 text-center">
-                <p className="text-red-400 font-medium">Scan failed</p>
-                <p className="text-sm text-red-400/70 mt-1">{scanError}</p>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {!isScanning && !scanError && scanResults.length === 0 && usedEngine && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-8 text-center">
-                <Search className="w-8 h-8 text-slate-500 mx-auto mb-3" />
-                <p className="text-slate-400 font-medium">No results found</p>
-                <p className="text-sm text-slate-500 mt-1">Try a simpler query or switch to AI Deep Search</p>
-              </div>
-            )}
-
-            {/* Results */}
-            {scanResults.length > 0 && !isScanning && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-slate-400">{scanResults.length} results found</h4>
-                  {usedEngine && (
-                    <span className="text-xs text-slate-500">
-                      via {usedEngine === 'google_jobs' ? 'Google Jobs' : 'AI Web Search'}
-                    </span>
-                  )}
-                </div>
-                {scanResults.sort((a, b) => (b.fitScore || 0) - (a.fitScore || 0)).map((job, i) => (
-                  <div key={i} className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="text-base font-semibold text-white">{job.title}</h4>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                            job.fitScore >= 4 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                            job.fitScore >= 3 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                            'bg-slate-700 text-slate-400 border border-slate-600'
-                          }`}>
-                            Fit: {job.fitScore}/5
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-300 mb-1">{job.company}</p>
-                        <div className="flex items-center gap-3 mb-3 text-xs text-slate-400">
-                          <span>{job.location}</span>
-                          {job.source && <span className="px-1.5 py-0.5 bg-slate-700 rounded">{job.source}</span>}
-                          {job.postedAt && <span>{job.postedAt}</span>}
-                          {job.schedule && <span>{job.schedule}</span>}
-                        </div>
-                        {job.description && (
-                          <p className="text-xs text-slate-500 mb-3 line-clamp-2">{job.description}</p>
-                        )}
-                        <div className="flex flex-wrap gap-1.5">
-                          {(job.requirements || []).map((req, j) => (
-                            <span key={j} className="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs">{req}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => addToTracker(job)}
-                          disabled={apps.some(a => a.title === job.title && a.company === job.company)}
-                          className="px-3 py-2 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
-                        >
-                          <Plus className="w-3 h-3" />
-                          {apps.some(a => a.title === job.title && a.company === job.company) ? 'Added' : 'Add to Tracker'}
-                        </button>
-                        {job.url && (
-                          <a href={job.url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
-                            <ExternalLink className="w-3 h-3" /> Apply
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========== CONTENT ENGINE TAB ========== */}
-        {activeTab === 'content' && (
-          <div className="space-y-6">
-            {/* Week Selector */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-4">Content Calendar</h3>
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(w => {
-                  const weekPosts = WEEK_POSTS.filter(p => p.week === w);
-                  const allPublished = weekPosts.length > 0 && weekPosts.every(p => posts[p.title]);
-                  return (
-                    <button
-                      key={w}
-                      onClick={() => setSelectedContentWeek(w)}
-                      className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedContentWeek === w
-                          ? 'bg-amber-500 text-slate-900'
-                          : w === currentWeek
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                      }`}
-                    >
-                      W{w}
-                      {allPublished && (
-                        <CheckCircle className="w-3 h-3 absolute -top-1 -right-1 text-green-400" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Week Posts */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-sm font-medium text-slate-400 mb-4">Week {selectedContentWeek} Posts</h3>
-              {weekPosts.length === 0 ? (
-                <p className="text-slate-500 text-sm">No posts scheduled for week {selectedContentWeek}.</p>
-              ) : (
-                <div className="space-y-3">
-                  {weekPosts.map((post, i) => (
-                    <div key={i} className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <p className="text-sm text-white font-medium mb-2">{post.title}</p>
-                          <div className="flex items-center gap-2">
-                            <PillarTag pillarId={post.pillar} small />
-                            <span className="text-xs text-slate-500">Req: {post.req}</span>
-                            <span className="text-xs text-slate-500 px-1.5 py-0.5 bg-slate-800 rounded">{post.format}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {posts[post.title] ? (
-                            <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Published</span>
-                          ) : (
-                            <button
-                              onClick={() => generateDraft(post)}
-                              disabled={generatingFor !== null}
-                              className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium hover:bg-amber-400 disabled:opacity-50 flex items-center gap-1"
-                            >
-                              {generatingFor === post.title ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
-                              {generatingFor === post.title ? 'Generating...' : 'Generate Draft'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Generated Draft */}
-            {generatedDraft && (
-              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-slate-400">Generated Draft</h3>
-                    {alignedTo.length > 0 && (
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <Target className="w-3 h-3 text-amber-400" />
-                        <span className="text-xs text-amber-400">Aligned to: {alignedTo.join(', ')}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={copyDraft}
-                      className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400"
-                    >
-                      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                      {copied ? 'Copied!' : 'Copy to Clipboard'}
-                    </button>
-                    <button
-                      onClick={() => { if (lastGeneratedPost) markPublished(lastGeneratedPost); }}
-                      disabled={!lastGeneratedPost || posts[lastGeneratedPost]}
-                      className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500 disabled:opacity-40"
-                    >
-                      <CheckCircle className="w-3 h-3" /> {posts[lastGeneratedPost] ? 'Published' : 'Mark Published'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const post = weekPosts.find(p => p.title === lastGeneratedPost) || { title: lastGeneratedPost, pillar: customPillar, req: '' };
-                        generateDraft(post);
-                      }}
-                      disabled={generatingFor !== null}
-                      className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700 disabled:opacity-50"
-                    >
-                      <RefreshCw className="w-3 h-3" /> Regenerate
-                    </button>
-                    <button
-                      onClick={() => { setGeneratedDraft(''); setAlignedTo([]); setLastGeneratedPost(null); }}
-                      className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs hover:bg-slate-700"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-                <div className="bg-slate-900 rounded-lg p-5 border border-slate-700">
-                  <pre className="text-sm text-slate-200 whitespace-pre-wrap font-[var(--font-dm-sans)] leading-relaxed">{generatedDraft}</pre>
-                </div>
-              </div>
-            )}
-
-            {/* Custom Post Generator */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-sm font-medium text-slate-400 mb-4">Custom Post Generator</h3>
-              <div className="space-y-3">
-                <div className="flex gap-3">
-                  <select
-                    value={customPillar}
-                    onChange={e => setCustomPillar(e.target.value)}
-                    className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-slate-200 text-sm"
-                  >
-                    {PILLARS.map(p => (
-                      <option key={p.id} value={p.id}>{p.icon} {p.label}</option>
                     ))}
-                  </select>
-                  <input
-                    type="text"
-                    value={customTitle}
-                    onChange={e => setCustomTitle(e.target.value)}
-                    placeholder="Enter post title..."
-                    className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
-                  />
-                  <button
-                    onClick={generateCustom}
-                    disabled={!customTitle.trim() || generatingFor !== null}
-                    className="px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg font-medium text-sm hover:bg-amber-400 disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {generatingFor ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                    Generate
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  value={customAngle}
-                  onChange={e => setCustomAngle(e.target.value)}
-                  placeholder="Optional angle: e.g. 'how we used AI to reduce Deutsche Bank CPA by 40%'"
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm"
-                />
-                {/* Target Role Selector */}
-                {apps.length > 0 && (
-                  <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
-                        <Target className="w-3 h-3 text-amber-400" />
-                        Align content to tracked roles
-                      </span>
-                      {selectedTargetRoles.length > 0 && (
-                        <button onClick={() => setSelectedTargetRoles([])} className="text-xs text-slate-500 hover:text-slate-300">
-                          Clear selection
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-1.5">
-                      {[...apps].sort((a, b) => {
-                        if (a.starred && !b.starred) return -1;
-                        if (!a.starred && b.starred) return 1;
-                        return (b.fitScore || 0) - (a.fitScore || 0);
-                      }).map(app => (
-                        <label key={app.id} className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors ${
-                          selectedTargetRoles.includes(app.id)
-                            ? 'bg-amber-500/10 border border-amber-500/30'
-                            : 'hover:bg-slate-800 border border-transparent'
-                        }`}>
-                          <input
-                            type="checkbox"
-                            checked={selectedTargetRoles.includes(app.id)}
-                            onChange={() => toggleTargetRole(app.id)}
-                            className="rounded border-slate-600 bg-slate-800 text-amber-500 w-3.5 h-3.5"
-                          />
-                          {app.starred && <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />}
-                          <span className="text-xs text-white flex-1 truncate">{app.title} — {app.company}</span>
-                          <span className={`text-xs font-mono flex-shrink-0 ${
-                            app.fitScore >= 4 ? 'text-amber-400' : app.fitScore >= 3 ? 'text-blue-400' : 'text-slate-500'
-                          }`}>{app.fitScore}/5</span>
-                          {(app.contentCount || 0) > 0 && (
-                            <span className="text-xs text-emerald-400/70 flex-shrink-0">{app.contentCount}p</span>
-                          )}
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-slate-500 mt-2">
-                      {selectedTargetRoles.length > 0
-                        ? `${selectedTargetRoles.length} role${selectedTargetRoles.length !== 1 ? 's' : ''} selected`
-                        : apps.some(a => a.starred)
-                          ? `Auto: ${apps.filter(a => a.starred).length} starred role${apps.filter(a => a.starred).length !== 1 ? 's' : ''}`
-                          : `Auto: ${apps.filter(a => a.fitScore >= 3).length} roles with fit >= 3`
-                      }
-                    </p>
                   </div>
-                )}
-              </div>
+                  <div>
+                    <label className="text-xs text-slate-400 mb-1 block">Company Engagement Notes</label>
+                    <textarea value={tempMetrics.companyEngagements || ''}
+                      onChange={e => setTempMetrics({ ...tempMetrics, companyEngagements: e.target.value })}
+                      placeholder="e.g. Recruiter from Matrix42 viewed profile, VP at EcoVadis liked AI post..."
+                      rows={3} className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm" />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {(() => {
+                    const wm = campaign.metrics?.[`week${campaignWeek}`] || {};
+                    return [
+                      { label: 'LinkedIn Impressions', value: wm.impressions || 0 },
+                      { label: 'Profile Views', value: wm.profileViews || 0 },
+                      { label: 'New Connections', value: wm.connections || 0 },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-3">
+                        <span className="text-xs text-slate-400">{m.label}</span>
+                        <div className="text-xl font-bold text-white font-mono mt-1">{m.value}</div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
+              {!editingMetrics && campaign.metrics?.[`week${campaignWeek}`]?.companyEngagements && (
+                <div className="mt-4 p-3 bg-slate-900/50 border border-slate-700/50 rounded-lg">
+                  <span className="text-xs text-slate-400 block mb-1">Company Engagement Notes</span>
+                  <p className="text-sm text-slate-200">{campaign.metrics[`week${campaignWeek}`].companyEngagements}</p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
 
-        {/* ========== TRACKER TAB ========== */}
-        {activeTab === 'tracker' && (
-          <div className="space-y-6">
-            {/* Add Role */}
+            {/* Kit Stats */}
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Application Tracker</h3>
-                <button
-                  onClick={() => setShowAddForm(!showAddForm)}
-                  className="px-4 py-2 bg-amber-500 text-slate-900 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-amber-400"
-                >
-                  {showAddForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                  {showAddForm ? 'Cancel' : 'Add Role'}
+                <h3 className="text-sm font-medium text-slate-400 flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-amber-400" />Kit Newsletter Stats
+                </h3>
+                <button onClick={fetchKitStats} className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
+                  <RefreshCw className="w-3 h-3" />Refresh
                 </button>
               </div>
-
-              {/* Add Form */}
-              {showAddForm && (
-                <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-5 mb-4 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Job Title</label>
-                      <input
-                        value={newApp.title}
-                        onChange={e => setNewApp({ ...newApp, title: e.target.value })}
-                        placeholder="VP Marketing"
-                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Company</label>
-                      <input
-                        value={newApp.company}
-                        onChange={e => setNewApp({ ...newApp, company: e.target.value })}
-                        placeholder="Company name"
-                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Location</label>
-                      <input
-                        value={newApp.location}
-                        onChange={e => setNewApp({ ...newApp, location: e.target.value })}
-                        placeholder="Berlin, Germany"
-                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Listing URL</label>
-                      <input
-                        value={newApp.url}
-                        onChange={e => setNewApp({ ...newApp, url: e.target.value })}
-                        placeholder="https://..."
-                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                      />
-                    </div>
+              {kitStats ? (
+                <div className="space-y-3">
+                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-3">
+                    <span className="text-xs text-slate-400">Total Subscribers</span>
+                    <div className="text-xl font-bold text-white font-mono mt-1">{kitStats.subscriberCount}</div>
                   </div>
-                  <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Requirements (comma-separated)</label>
-                    <input
-                      value={newApp.requirements}
-                      onChange={e => setNewApp({ ...newApp, requirements: e.target.value })}
-                      placeholder="AI/ML experience, team leadership, DACH market knowledge..."
-                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-400 mb-2 block">Fit Score Criteria</label>
+                  {kitStats.broadcasts?.length > 0 && (
                     <div className="space-y-2">
-                      {FIT_CRITERIA.map((criterion, i) => (
-                        <label key={i} className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={newApp.fitChecks.includes(i)}
-                            onChange={e => {
-                              const checks = e.target.checked
-                                ? [...newApp.fitChecks, i]
-                                : newApp.fitChecks.filter(c => c !== i);
-                              setNewApp({ ...newApp, fitChecks: checks });
-                            }}
-                            className="rounded border-slate-600 bg-slate-800 text-amber-500"
-                          />
-                          {criterion}
-                        </label>
+                      <span className="text-xs text-slate-400">Recent Broadcasts</span>
+                      {kitStats.broadcasts.slice(0, 5).map(b => (
+                        <div key={b.id} className="flex items-center justify-between p-2 bg-slate-900/30 rounded-lg text-xs">
+                          <span className="text-slate-300 truncate flex-1">{b.subject}</span>
+                          {b.stats && (
+                            <span className="text-slate-400 flex-shrink-0 ml-2">
+                              {b.stats.open_rate ? `${(b.stats.open_rate * 100).toFixed(0)}% opens` : 'No stats'}
+                            </span>
+                          )}
+                        </div>
                       ))}
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-                    <textarea
-                      value={newApp.notes}
-                      onChange={e => setNewApp({ ...newApp, notes: e.target.value })}
-                      placeholder="Any additional notes..."
-                      rows={2}
-                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                    />
-                  </div>
-                  <button
-                    onClick={addApplication}
-                    disabled={!newApp.title || !newApp.company}
-                    className="px-5 py-2.5 bg-amber-500 text-slate-900 rounded-lg font-medium text-sm disabled:opacity-50"
-                  >
-                    Add Application
-                  </button>
+                  )}
                 </div>
-              )}
-
-              {/* Applications List */}
-              {apps.length === 0 ? (
-                <p className="text-slate-400 text-sm py-4">No applications tracked yet.</p>
               ) : (
-                <div className="space-y-3">
-                  {[...apps].sort((a, b) => {
-                    // Starred first, then by fitScore
-                    if (a.starred && !b.starred) return -1;
-                    if (!a.starred && b.starred) return 1;
-                    return (b.fitScore || 0) - (a.fitScore || 0);
-                  }).map(app => (
-                    <div key={app.id} className={`bg-slate-900/50 border rounded-lg overflow-hidden ${app.starred ? 'border-amber-500/40' : 'border-slate-700/50'}`}>
-                      {/* Collapsed View */}
-                      <div className="flex items-center">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleStar(app.id); }}
-                          className="pl-4 pr-1 py-4 flex-shrink-0"
-                        >
-                          <Star className={`w-4 h-4 transition-colors ${app.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-600 hover:text-slate-400'}`} />
-                        </button>
-                        <button
-                          onClick={() => setExpandedApp(expandedApp === app.id ? null : app.id)}
-                          className="flex-1 p-4 pl-2 flex items-center justify-between text-left"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                              app.fitScore >= 4 ? 'bg-amber-500/20 text-amber-400' :
-                              app.fitScore >= 3 ? 'bg-blue-500/20 text-blue-400' :
-                              'bg-slate-700 text-slate-400'
-                            }`}>
-                              {app.fitScore}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-white truncate">{app.title}</p>
-                              <p className="text-xs text-slate-400">{app.company} - {app.location}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3 flex-shrink-0">
-                            {(app.contentCount || 0) > 0 && (
-                              <span className="text-xs text-emerald-400 flex items-center gap-1">
-                                <FileText className="w-3 h-3" />{app.contentCount} post{app.contentCount !== 1 ? 's' : ''}
-                              </span>
-                            )}
-                            <StatusBadge status={app.status} />
-                            {expandedApp === app.id ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-                          </div>
-                        </button>
+                <p className="text-sm text-slate-500">Click Refresh to load Kit stats</p>
+              )}
+            </div>
+
+            {/* Metrics History */}
+            {Object.keys(campaign.metrics || {}).length > 0 && (
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                <h3 className="text-sm font-medium text-slate-400 mb-3">Weekly Trend</h3>
+                <div className="space-y-2">
+                  {Object.entries(campaign.metrics).sort().map(([weekKey, data]) => (
+                    <div key={weekKey} className="flex items-center gap-4 text-xs">
+                      <span className="text-slate-400 w-16">{weekKey.replace('week', 'Week ')}</span>
+                      <div className="flex-1 flex items-center gap-4">
+                        <span className="text-slate-300">{data.impressions || 0} imp</span>
+                        <span className="text-slate-300">{data.profileViews || 0} views</span>
+                        <span className="text-slate-300">{data.connections || 0} conn</span>
+                        {data.companyEngagements && (
+                          <span className="text-amber-400 truncate">{data.companyEngagements}</span>
+                        )}
                       </div>
-
-                      {/* Expanded View */}
-                      {expandedApp === app.id && (
-                        <div className="border-t border-slate-700/50 p-4 space-y-4">
-                          {/* Requirements */}
-                          <div>
-                            <label className="text-xs text-slate-400 mb-2 block">Requirements</label>
-                            <div className="flex flex-wrap gap-1.5">
-                              {(app.requirements || []).map((req, j) => (
-                                <span key={j} className="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-xs border border-slate-700">{req}</span>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Status Selector */}
-                          <div>
-                            <label className="text-xs text-slate-400 mb-2 block">Status</label>
-                            <div className="flex flex-wrap gap-2">
-                              {STATUS_OPTIONS.map(s => (
-                                <button
-                                  key={s.value}
-                                  onClick={() => updateAppStatus(app.id, s.value)}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                    app.status === s.value
-                                      ? 'ring-2 ring-offset-1 ring-offset-slate-900'
-                                      : 'opacity-60 hover:opacity-100'
-                                  }`}
-                                  style={{
-                                    backgroundColor: s.color + '20',
-                                    color: s.color,
-                                    borderColor: s.color + '40',
-                                    borderWidth: '1px',
-                                    ...(app.status === s.value ? { ringColor: s.color } : {}),
-                                  }}
-                                >
-                                  {s.value}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Notes */}
-                          <div>
-                            <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-                            <textarea
-                              value={app.notes || ''}
-                              onChange={e => updateAppNotes(app.id, e.target.value)}
-                              rows={2}
-                              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm"
-                            />
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-2">
-                            {app.url && (
-                              <a href={app.url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 border border-slate-600 text-slate-300 rounded-lg text-xs flex items-center gap-1 hover:bg-slate-700">
-                                <ExternalLink className="w-3 h-3" /> View Listing
-                              </a>
-                            )}
-                            <button
-                              onClick={() => removeApp(app.id)}
-                              className="px-3 py-1.5 border border-red-800 text-red-400 rounded-lg text-xs flex items-center gap-1 hover:bg-red-900/30"
-                            >
-                              <Trash2 className="w-3 h-3" /> Remove
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* No campaign yet and not on step 1 */}
+        {!strategy && currentStep !== 1 && (
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
+            <Target className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-400 font-medium">No active campaign</p>
+            <p className="text-sm text-slate-500 mt-1">Start by scanning jobs and generating a quarterly strategy in Step 1</p>
+            <button onClick={() => setStep(1)} className="mt-4 px-4 py-2 bg-amber-500 text-slate-900 rounded-lg text-sm font-medium hover:bg-amber-400">
+              Go to Step 1: Target
+            </button>
           </div>
         )}
       </div>

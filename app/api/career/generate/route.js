@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { MOHAMED_CONTEXT, PILLARS } from '../../../lib/career-data';
+import { MOHAMED_CONTEXT, PILLARS, NEWSLETTER_SYSTEM_PROMPT } from '../../../lib/career-data';
 
-const systemPrompt = `You are a strategic LinkedIn content generator for Mohamed Ali Mohamed's VP Marketing / CMO career transition campaign.
+const linkedinSystemPrompt = `You are a strategic LinkedIn content generator for Mohamed Ali Mohamed's VP Marketing / CMO career transition campaign.
 
 CRITICAL CONTEXT: ${MOHAMED_CONTEXT}
 
@@ -36,7 +36,7 @@ If the request includes target roles with their requirements, subtly weave proof
 
 export async function POST(request) {
   try {
-    const { title, pillar, requirement, targetRoles, angle } = await request.json();
+    const { title, pillar, requirement, targetRoles, angle, type } = await request.json();
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -44,14 +44,15 @@ export async function POST(request) {
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const pillarInfo = PILLARS.find(p => p.id === pillar);
+    const isNewsletter = type === 'newsletter';
 
-    // Build pre-application content alignment instructions
+    // Build pre-application content alignment
     let preAppInstructions = '';
     if (targetRoles && targetRoles.length > 0) {
       preAppInstructions = `
 
 PRE-APPLICATION CONTENT ALIGNMENT:
-The following roles are active targets. This post should naturally demonstrate capabilities that address their requirements, without naming the companies or roles directly.
+The following roles are active targets. This ${isNewsletter ? 'article' : 'post'} should naturally demonstrate capabilities that address their requirements, without naming the companies or roles directly.
 
 ${targetRoles.map(r =>
   `Target: ${r.title} at ${r.company}
@@ -59,38 +60,49 @@ Key requirements to address: ${r.requirements?.slice(0, 3).join('; ')}
 Fit score: ${r.fitScore}/5`
 ).join('\n\n')}
 
-Ensure this post would strengthen Mohamed's profile if a recruiter from any of these companies reviewed his LinkedIn.`;
+Ensure this ${isNewsletter ? 'article' : 'post'} would strengthen Mohamed's profile if a recruiter from any of these companies reviewed his ${isNewsletter ? 'newsletter' : 'LinkedIn'}.`;
     }
 
-    // Build angle instructions if provided
+    // Build angle instructions
     let angleInstructions = '';
     if (angle && angle.trim()) {
       angleInstructions = `\n\nSPECIFIC ANGLE REQUESTED: ${angle}
-Use this specific angle as the primary frame for the post. The title is a guide but this angle takes priority for the narrative direction.`;
+Use this specific angle as the primary frame for the ${isNewsletter ? 'article' : 'post'}. The title is a guide but this angle takes priority for the narrative direction.`;
     }
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1500,
-      system: systemPrompt,
-      messages: [{
-        role: 'user',
-        content: `Write a LinkedIn post titled: "${title}"
+    const systemPrompt = isNewsletter ? NEWSLETTER_SYSTEM_PROMPT : linkedinSystemPrompt;
+
+    const userContent = isNewsletter
+      ? `Write a newsletter article titled: "${title}"
+
+Content pillar: ${pillarInfo?.label || pillar}
+Pillar description: ${pillarInfo?.description || ''}
+
+This is an educational newsletter article for Mohamed's Kit subscribers. It should:
+- Be 1200-1800 words
+- Include section headers wrapped in ** (e.g., **Section Title**)
+- Be educational and insightful — teach something useful
+- Use Mohamed's real experiences as evidence (name clients, products, numbers)
+- End with a thought-provoking question or CTA to reply${preAppInstructions}${angleInstructions}`
+      : `Write a LinkedIn post titled: "${title}"
 
 Content pillar: ${pillarInfo?.label || pillar}
 Addresses pattern requirement: ${requirement || ''}
 Pillar description: ${pillarInfo?.description || ''}
 
-Use real experiences from Mohamed's background. Be specific: name the clients, reference the AI products by name, use real numbers.${preAppInstructions}${angleInstructions}`,
-      }],
+Use real experiences from Mohamed's background. Be specific: name the clients, reference the AI products by name, use real numbers.${preAppInstructions}${angleInstructions}`;
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: isNewsletter ? 3000 : 1500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userContent }],
     });
 
     const text = response.content.find(b => b.type === 'text')?.text || '';
-
-    // Extract aligned companies for the UI indicator
     const alignedTo = (targetRoles || []).map(r => r.company);
 
-    return NextResponse.json({ draft: text, alignedTo });
+    return NextResponse.json({ draft: text, alignedTo, type: isNewsletter ? 'newsletter' : 'linkedin' });
   } catch (error) {
     console.error('Career content generation failed:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

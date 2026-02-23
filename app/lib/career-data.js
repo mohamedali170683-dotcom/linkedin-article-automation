@@ -17,42 +17,6 @@ export const FIT_CRITERIA = [
   "Geography accessible (DACH / Remote-friendly)",
 ];
 
-export const WEEK_POSTS = [
-  // Week 1
-  { week: 1, title: "I built 7 AI products while running 40 marketers. Here is what I learned.", pillar: "ai", req: "#1", format: "text" },
-  { week: 1, title: "What is Total Search and why your brand needs it", pillar: "brand", req: "#5", format: "text" },
-  // Week 2
-  { week: 2, title: "The AI Visibility Audit: tracking brands in ChatGPT and Gemini", pillar: "ai", req: "#1", format: "text" },
-  { week: 2, title: "Managing 40+ marketers: 3 operational lessons from agency-side", pillar: "crossfunc", req: "#4", format: "text" },
-  // Week 3
-  { week: 3, title: "Launching DynMedia in Germany: 250K subscriptions in 8 months", pillar: "enterprise", req: "#7", format: "text" },
-  { week: 3, title: "Why I am moving from agency to brand-side", pillar: "transition", req: "Auth", format: "text" },
-  // Week 4
-  { week: 4, title: "Cross-channel attribution: lessons from Deutsche Bank search", pillar: "demandgen", req: "#2", format: "text" },
-  { week: 4, title: "Product thinking for marketers: why I built Share of Search", pillar: "product", req: "#8", format: "text" },
-  // Week 5
-  { week: 5, title: "How to align marketing and sales from agency background", pillar: "crossfunc", req: "#3", format: "text" },
-  { week: 5, title: "Carousel: Total Search Framework in 8 slides", pillar: "brand", req: "#5", format: "carousel" },
-  // Week 6
-  { week: 6, title: "AI in DACH marketing: what German companies actually need", pillar: "dach", req: "#1", format: "text" },
-  { week: 6, title: "Restructuring a team with Kanban: before and after", pillar: "crossfunc", req: "#4", format: "text" },
-  // Week 7
-  { week: 7, title: "8-figure growth at Foot Locker EMEA", pillar: "enterprise", req: "#7", format: "text" },
-  { week: 7, title: "Building B2B infrastructure at JustEat from scratch", pillar: "demandgen", req: "#2", format: "text" },
-  // Week 8
-  { week: 8, title: "Video: Live demo of AI Visibility Audit", pillar: "ai", req: "#1", format: "video" },
-  { week: 8, title: "What C-suite clients taught me about stakeholder management", pillar: "crossfunc", req: "#3", format: "text" },
-  // Week 9
-  { week: 9, title: "The CMO+ profile: why companies want marketing leaders who build", pillar: "ai", req: "#1,#8", format: "text" },
-  // Week 10
-  { week: 10, title: "Demand gen in 2026: what changed and what did not", pillar: "demandgen", req: "#2", format: "text" },
-  // Week 11
-  { week: 11, title: "15x ROAS: B2B performance at scale", pillar: "enterprise", req: "#7", format: "text" },
-  { week: 11, title: "The DACH marketing talent gap", pillar: "dach", req: "Mkt", format: "text" },
-  // Week 12
-  { week: 12, title: "How to evaluate AI marketing tools (from someone who builds them)", pillar: "ai", req: "#1", format: "text" },
-];
-
 export const STATUS_OPTIONS = [
   { value: "Identified", color: "#64748b" },
   { value: "Scored", color: "#f59e0b" },
@@ -62,6 +26,13 @@ export const STATUS_OPTIONS = [
   { value: "Rejected", color: "#ef4444" },
   { value: "Offer", color: "#10b981" },
 ];
+
+export const CONTENT_STATUSES = {
+  PENDING: 'pending',
+  GENERATED: 'generated',
+  EDITED: 'edited',
+  PUBLISHED: 'published',
+};
 
 export const MOHAMED_CONTEXT = `Mohamed Ali Mohamed is a marketing leader transitioning from WPP Media (agency-side) to brand-side VP Marketing / CMO roles in DACH.
 
@@ -84,3 +55,40 @@ Key facts for content generation:
 - Languages: English (native), Arabic (native), German (professional)
 
 Writing style: First person, confident but not arrogant. Uses specific numbers and real examples. Short paragraphs. Ends posts with engagement question. No emojis in body text. Professional but human.`;
+
+export const NEWSLETTER_SYSTEM_PROMPT = `You are a strategic newsletter content generator for Mohamed Ali Mohamed's career transition campaign.
+
+CONTEXT: ${MOHAMED_CONTEXT}
+
+You write educational newsletter articles that demonstrate Mohamed's expertise to potential employers, industry peers, and subscribers. These articles serve a dual purpose:
+1. Build Mohamed's thought leadership and personal brand
+2. Subtly demonstrate capabilities that VP Marketing / CMO job descriptions in DACH demand
+
+NEWSLETTER FORMAT:
+- 1200-1800 words
+- Educational and insightful, not self-promotional
+- Include frameworks, data points, or actionable insights
+- Use section headers (wrapped in **) to structure the article
+- First person perspective: "In my experience..." not "Leaders should..."
+- Include specific examples from Mohamed's work (clients, products, numbers)
+- End with a thought-provoking question or call-to-action to reply
+- Professional but accessible tone — like explaining to a smart peer
+- No emojis. No hashtags.
+
+WHEN TARGET ROLES ARE PROVIDED:
+Subtly weave proof points that address specific JD requirements from target roles. Do NOT mention companies or roles. Instead, naturally demonstrate the capability they seek.`;
+
+// Create empty campaign template
+export function createCampaign(quarterLabel, startDate) {
+  return {
+    id: `campaign-${Date.now()}`,
+    quarter: quarterLabel,
+    startDate,
+    endDate: new Date(new Date(startDate).getTime() + 12 * 7 * 86400000).toISOString().split('T')[0],
+    currentStep: 1,
+    targetRoles: [],
+    strategy: null,
+    content: {},
+    metrics: {},
+  };
+}
