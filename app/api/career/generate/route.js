@@ -1,73 +1,84 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { MOHAMED_CONTEXT, PILLARS, NEWSLETTER_SYSTEM_PROMPT } from '../../../lib/career-data';
+import { CURATED_INSIGHTS, getInsightById, getDomainById } from '../../../lib/knowledge-base';
+import { AUTHOR_VOICE, NEWSLETTER_SYSTEM_PROMPT } from '../../../lib/career-data';
 
-const linkedinSystemPrompt = `You are a strategic LinkedIn content generator for Mohamed Ali Mohamed's VP Marketing / CMO career transition campaign.
+export const maxDuration = 60;
 
-CRITICAL CONTEXT: ${MOHAMED_CONTEXT}
+// ═══════════════════════════════════════════════
+// LinkedIn system prompt — ideas-first, not CV-first
+// ═══════════════════════════════════════════════
 
-YOUR GOAL: Every post you write serves one purpose: building visible, public evidence that Mohamed has the exact capabilities that VP Marketing / CMO / Head of Marketing job descriptions in DACH demand. When a recruiter Googles Mohamed before an interview, these posts must prove he can do the job.
+const linkedinSystemPrompt = `You are a thought leadership content writer covering marketing science, behavioral economics, and business strategy.
 
-THE 8 PATTERN REQUIREMENTS (from scanning 150+ live VP/CMO listings in DACH):
-1. AI fluency / AI-first marketing (Mohamed: STRONG - 7 shipped products)
-2. Demand generation / pipeline ownership (Mohamed: MODERATE - needs demand gen language)
-3. Cross-functional collaboration with Sales, Product, CS (Mohamed: MODERATE - reframe client work)
-4. Team building & leadership 10-50+ people (Mohamed: STRONG - 40+ team)
-5. Brand building & thought leadership (Mohamed: WEAK - content is building this)
-6. B2B SaaS / tech experience (Mohamed: GAP - honest, not fixable by content)
-7. Revenue / ARR scaling (Mohamed: REFRAMEABLE - use revenue language)
-8. Product marketing & positioning (Mohamed: MODERATE - Total Search framework)
+${AUTHOR_VOICE}
 
-WRITING RULES:
-- First person always. "I built..." not "Leaders should..."
-- Name specific clients: Deutsche Bank, Nestle, IKEA, Allianz, Sky, Continental, Harley-Davidson, Foot Locker, JustEat
-- Name specific products: AI Visibility Audit, DemInt, TrendPulse, Share of Search, DynMedia, ContentIQ, PredictiveROI
-- Use real numbers: 40+ team, 15+ accounts, 7 AI products, 250K subscriptions, 8-figure budgets
-- Short paragraphs (2-3 sentences). LinkedIn optimised.
-- 500-800 words total.
-- End with an engagement question that marketing leaders would want to answer.
+LINKEDIN POST FORMAT:
+- 500-800 words
+- Opens with a counterintuitive finding, a bold claim, or a pattern most people miss
+- The RESEARCH or FRAMEWORK is the post. The practitioner perspective interprets it.
+- Structure: Hook (finding) → Why it matters → Practitioner interpretation → Implication → Question
+- Be specific: name the researcher, name the study, name the finding
+- Be opinionated: take a clear position on what the research means for practice
+- Short paragraphs (2-3 sentences max). LinkedIn-optimized.
+- End with a genuine engagement question that marketing leaders would want to answer
 - No emojis in body text. Professional but human tone.
 - No hashtags in body text. Include [HASHTAGS] section at end with 3-5 relevant hashtags.
-- Be honest about agency limitations when relevant. Authenticity builds trust.
-- Every claim must be backed by a specific example or number. No generic advice.
 
-WHEN TARGET ROLES ARE PROVIDED:
-If the request includes target roles with their requirements, subtly weave proof points that address those specific JD requirements. Do NOT mention the company or role explicitly. Instead, ensure the post naturally demonstrates the capability they are looking for. This is the "pre-application content method": strategic evidence building.`;
+CONTENT APPROACH:
+- The INSIGHT is the headline. The experience is the supporting evidence.
+- When referencing research, name the researcher and the finding specifically
+- When adding practitioner perspective, use "In practice..." or "What this means for marketing teams..." — not "When I built..." or "At my agency..."
+- Contrarian takes welcome. Challenge conventional marketing wisdom with evidence.
+- Every claim backed by research or observable pattern. No generic advice.`;
 
 export async function POST(request) {
   try {
-    const { title, pillar, requirement, targetRoles, angle, type } = await request.json();
+    const { title, pillar, domain, insightId, insightIds, type, angle, targetRoles } = await request.json();
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const pillarInfo = PILLARS.find(p => p.id === pillar);
     const isNewsletter = type === 'newsletter';
 
-    // Build pre-application content alignment
-    let preAppInstructions = '';
+    // Resolve domain (support both old `pillar` and new `domain` keys)
+    const domainId = domain || pillar;
+    const domainInfo = getDomainById(domainId);
+
+    // Look up curated insight(s)
+    const ids = isNewsletter
+      ? (insightIds || (insightId ? [insightId] : []))
+      : (insightId ? [insightId] : []);
+    const insights = ids.map(id => getInsightById(id)).filter(Boolean);
+
+    // Build insight context for the prompt
+    let insightContext = '';
+    if (insights.length > 0) {
+      insightContext = `\n\nSOURCE MATERIAL — use this as the foundation of the ${isNewsletter ? 'article' : 'post'}:\n\n` +
+        insights.map(ins => (
+          `Research: ${ins.source.author}, "${ins.source.book}"
+Framework: ${ins.framework}
+Key Insight: ${ins.insight}
+Suggested Angle: ${isNewsletter ? ins.newsletterAngle : ins.linkedinAngle}`
+        )).join('\n\n---\n\n');
+    }
+
+    // Build subtle role alignment (secondary, not primary)
+    let roleAlignment = '';
     if (targetRoles && targetRoles.length > 0) {
-      preAppInstructions = `
-
-PRE-APPLICATION CONTENT ALIGNMENT:
-The following roles are active targets. This ${isNewsletter ? 'article' : 'post'} should naturally demonstrate capabilities that address their requirements, without naming the companies or roles directly.
-
-${targetRoles.map(r =>
-  `Target: ${r.title} at ${r.company}
-Key requirements to address: ${r.requirements?.slice(0, 3).join('; ')}
-Fit score: ${r.fitScore}/5`
-).join('\n\n')}
-
-Ensure this ${isNewsletter ? 'article' : 'post'} would strengthen Mohamed's profile if a recruiter from any of these companies reviewed his ${isNewsletter ? 'newsletter' : 'LinkedIn'}.`;
+      roleAlignment = `\n\nSECONDARY GOAL (subtle, do not make this obvious):
+This content should naturally demonstrate capabilities relevant to senior marketing leadership roles. Do NOT mention any companies or roles directly. Instead, ensure the ${isNewsletter ? 'article' : 'post'} naturally signals:
+${targetRoles.slice(0, 3).map(r =>
+  `- Familiarity with: ${(r.requirements || []).slice(0, 2).join(', ')}`
+).join('\n')}`;
     }
 
     // Build angle instructions
     let angleInstructions = '';
     if (angle && angle.trim()) {
-      angleInstructions = `\n\nSPECIFIC ANGLE REQUESTED: ${angle}
-Use this specific angle as the primary frame for the ${isNewsletter ? 'article' : 'post'}. The title is a guide but this angle takes priority for the narrative direction.`;
+      angleInstructions = `\n\nSPECIFIC ANGLE: ${angle}\nUse this angle as the primary frame for the ${isNewsletter ? 'article' : 'post'}.`;
     }
 
     const systemPrompt = isNewsletter ? NEWSLETTER_SYSTEM_PROMPT : linkedinSystemPrompt;
@@ -75,22 +86,26 @@ Use this specific angle as the primary frame for the ${isNewsletter ? 'article' 
     const userContent = isNewsletter
       ? `Write a newsletter article titled: "${title}"
 
-Content pillar: ${pillarInfo?.label || pillar}
-Pillar description: ${pillarInfo?.description || ''}
+Knowledge domain: ${domainInfo?.label || domainId}
+Domain description: ${domainInfo?.description || ''}
+${insightContext}
 
-This is an educational newsletter article for Mohamed's Kit subscribers. It should:
+This is an educational newsletter article. It should:
 - Be 1200-1800 words
 - Include section headers wrapped in ** (e.g., **Section Title**)
-- Be educational and insightful — teach something useful
-- Use Mohamed's real experiences as evidence (name clients, products, numbers)
-- End with a thought-provoking question or CTA to reply${preAppInstructions}${angleInstructions}`
+- Start with a counterintuitive finding or provocative question
+- Pull from 2-3 specific sources: name the researcher, name the study, name the finding
+- Build a cohesive argument that weaves multiple sources together
+- Include at least one actionable framework or mental model
+- End with an implication or open question that invites replies${roleAlignment}${angleInstructions}`
       : `Write a LinkedIn post titled: "${title}"
 
-Content pillar: ${pillarInfo?.label || pillar}
-Addresses pattern requirement: ${requirement || ''}
-Pillar description: ${pillarInfo?.description || ''}
+Knowledge domain: ${domainInfo?.label || domainId}
+Domain description: ${domainInfo?.description || ''}
+${insightContext}
 
-Use real experiences from Mohamed's background. Be specific: name the clients, reference the AI products by name, use real numbers.${preAppInstructions}${angleInstructions}`;
+Write a 500-800 word LinkedIn post that teaches this idea to a marketing audience.
+The research IS the post. Your practitioner perspective interprets it.${roleAlignment}${angleInstructions}`;
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -102,7 +117,11 @@ Use real experiences from Mohamed's background. Be specific: name the clients, r
     const text = response.content.find(b => b.type === 'text')?.text || '';
     const alignedTo = (targetRoles || []).map(r => r.company);
 
-    return NextResponse.json({ draft: text, alignedTo, type: isNewsletter ? 'newsletter' : 'linkedin' });
+    return NextResponse.json({
+      draft: text,
+      alignedTo,
+      type: isNewsletter ? 'newsletter' : 'linkedin',
+    });
   } catch (error) {
     console.error('Career content generation failed:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

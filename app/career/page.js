@@ -9,12 +9,14 @@ import {
   Calendar, Mail, Zap
 } from 'lucide-react';
 import Link from 'next/link';
-import { PILLARS, FIT_CRITERIA, STATUS_OPTIONS, CONTENT_STATUSES, MOHAMED_CONTEXT, createCampaign } from '../lib/career-data';
+import { PILLARS, FIT_CRITERIA, STATUS_OPTIONS, CONTENT_STATUSES, createCampaign } from '../lib/career-data';
+import { KNOWLEDGE_DOMAINS } from '../lib/knowledge-base';
 
 // ============ HELPERS ============
 
-function PillarTag({ pillarId, small }) {
-  const p = PILLARS.find(x => x.id === pillarId);
+function DomainTag({ domainId, small }) {
+  // Support both new `domain` and old `pillar` keys
+  const p = KNOWLEDGE_DOMAINS.find(x => x.id === domainId) || PILLARS.find(x => x.id === domainId);
   if (!p) return null;
   return (
     <span
@@ -222,15 +224,17 @@ export default function CareerCommandCenter() {
 
   const weekData = strategy?.weeks?.find(w => w.week === selectedWeek);
 
-  const generateContent = async (contentKey, title, pillar, type, angle) => {
+  const generateContent = async (contentKey, title, domain, type, angle, insightId, insightIds) => {
     setGeneratingFor(contentKey);
     try {
       const res = await fetch('/api/career/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title, pillar, type,
+          title, domain, type,
           angle: angle || '',
+          insightId: insightId || null,
+          insightIds: insightIds || null,
           targetRoles: (campaign?.targetRoles || []).map(r => ({
             title: r.title, company: r.company,
             requirements: r.requirements, fitScore: r.fitScore,
@@ -577,20 +581,21 @@ export default function CareerCommandCenter() {
                 {(weekData.linkedin || []).map((post, i) => {
                   const key = `w${selectedWeek}-linkedin-${i}`;
                   const existing = campaign.content?.[key];
+                  const postDomain = post.domain || post.pillar;
                   return (
                     <div key={key} className="bg-slate-800 border border-slate-700 rounded-xl p-5">
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">LinkedIn</span>
-                            <PillarTag pillarId={post.pillar} small />
+                            <DomainTag domainId={postDomain} small />
                             {existing?.status === CONTENT_STATUSES.PUBLISHED && (
                               <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Published</span>
                             )}
                           </div>
                           <h4 className="text-sm font-semibold text-white">{post.title}</h4>
+                          {post.source && <p className="text-xs text-slate-500 mt-1">Source: {post.source}</p>}
                           {post.angle && <p className="text-xs text-slate-400 mt-1">Angle: {post.angle}</p>}
-                          {post.alignsTo && <p className="text-xs text-amber-400/60 mt-1">Addresses: {post.alignsTo.join(', ')}</p>}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           {existing ? (
@@ -605,7 +610,7 @@ export default function CareerCommandCenter() {
                               </button>
                             </>
                           ) : (
-                            <button onClick={() => generateContent(key, post.title, post.pillar, 'linkedin', post.angle)}
+                            <button onClick={() => generateContent(key, post.title, postDomain, 'linkedin', post.angle, post.insightId)}
                               disabled={generatingFor !== null}
                               className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400 disabled:opacity-50">
                               {generatingFor === key ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
@@ -623,6 +628,7 @@ export default function CareerCommandCenter() {
                   const key = `w${selectedWeek}-newsletter`;
                   const existing = campaign.content?.[key];
                   const nl = weekData.newsletter;
+                  const nlDomain = nl.domain || nl.pillar;
                   return (
                     <div className="bg-slate-800 border border-amber-500/20 rounded-xl p-5">
                       <div className="flex items-start justify-between gap-4 mb-3">
@@ -631,12 +637,13 @@ export default function CareerCommandCenter() {
                             <span className="text-xs font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded flex items-center gap-1">
                               <Mail className="w-3 h-3" />Newsletter
                             </span>
-                            <PillarTag pillarId={nl.pillar} small />
+                            <DomainTag domainId={nlDomain} small />
                             {existing?.status === CONTENT_STATUSES.PUBLISHED && (
                               <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Sent</span>
                             )}
                           </div>
                           <h4 className="text-sm font-semibold text-white">{nl.title}</h4>
+                          {nl.source && <p className="text-xs text-slate-500 mt-1">Sources: {nl.source}</p>}
                           {nl.angle && <p className="text-xs text-slate-400 mt-1">Angle: {nl.angle}</p>}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
@@ -652,7 +659,7 @@ export default function CareerCommandCenter() {
                               </button>
                             </>
                           ) : (
-                            <button onClick={() => generateContent(key, nl.title, nl.pillar, 'newsletter', nl.angle)}
+                            <button onClick={() => generateContent(key, nl.title, nlDomain, 'newsletter', nl.angle, null, nl.insightIds)}
                               disabled={generatingFor !== null}
                               className="px-3 py-1.5 bg-amber-500 text-slate-900 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-amber-400 disabled:opacity-50">
                               {generatingFor === key ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
