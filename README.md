@@ -1,404 +1,287 @@
-# Catchlight
+# Catchlight + Career Command Center
 
-**Where AI Visibility Meets the Science of Attention**
+AI-powered thought leadership engine and career campaign system. Generates research-backed marketing content from a curated knowledge library of 54 insights, publishes to newsletters and LinkedIn, and manages quarterly career campaigns.
 
-A newsletter automation platform that generates weekly "Lights" - short, research-backed insights bridging AI visibility (how brands appear in ChatGPT, Perplexity, Gemini) with behavioral science (how human attention actually works).
+Built with Next.js 14, Claude (Anthropic), and deployed on Vercel.
 
----
-
-## What is Catchlight?
-
-Catchlight is an automated content creation system designed for marketing professionals who need to understand the emerging intersection of:
-
-- **AI Visibility**: How brands are surfaced, cited, and recommended by Large Language Models
-- **Attention Science**: Behavioral economics, cognitive psychology, and how humans actually process information
-
-Each weekly issue is called a **Light**. Subscribers are **Light Catchers**.
+**Live**: [linkedin-article-automation.vercel.app](https://linkedin-article-automation.vercel.app)
 
 ---
 
-## Features
+## Two Systems, One Platform
 
-### Guided Light Editor
-A 3-step workflow to create publication-ready newsletter content:
+### 1. Career Command Center (`/career`)
 
-1. **Choose Voice** - Generate two AI-written options with different tones:
-   - *Sharp & Provocative*: Contrarian, challenges conventional wisdom
-   - *Thoughtful & Nuanced*: Balanced, acknowledges complexity
+A 4-step quarterly campaign wizard for building marketing authority:
 
-2. **Add Visuals** - Select from extracted research charts and data visualizations
+| Step | What Happens |
+|------|-------------|
+| **Target** | Scan Google Jobs (SerpAPI) or AI deep search for VP Marketing / CMO roles in DACH. Star the ones you want to target this quarter. |
+| **Create** | AI generates a 12-week content calendar across 6 knowledge domains, then writes LinkedIn posts and newsletter articles grounded in specific research. |
+| **Publish** | Copy LinkedIn posts to clipboard or send newsletters to Kit (ConvertKit) as drafts. |
+| **Track** | Log weekly metrics (impressions, profile views, connections) and monitor Kit broadcast stats. |
 
-3. **Review & Publish** - Edit, preview with inline charts, then:
-   - Send to Kit (ConvertKit) as newsletter draft
-   - Copy LinkedIn teaser with hashtags
-   - Generate AI voice narration (ElevenLabs)
+**Knowledge-first content** -- every piece of content is grounded in named research (Kahneman, Sharp, Cialdini, Shotton, Binet & Field, Sutherland, etc.) rather than personal achievements. The system draws from a curated library of 54 insights across 6 domains:
 
-### 52-Week Content Calendar
-Pre-mapped topics covering the full AI visibility + attention science landscape:
+- **Behavioral Science** -- System 1/2, anchoring, pratfall effect, nudge theory, loss aversion
+- **Brand Effectiveness** -- Mental availability, double jeopardy, 60/40 rule, ESOV, CEPs
+- **Consumer Psychology** -- Messy middle, 95% unconscious mind, status games, attention economy
+- **Leadership & Strategy** -- Kotter's 8 steps, transient advantage, learning organizations, value chains
+- **Marketing Innovation** -- AI visibility, GEO, innovation adoption, agile marketing, omnichannel
+- **Persuasion & Influence** -- Cialdini's 6 principles, pre-suasion, frame control, social proof
 
-| Quarter | Theme | Example Lights |
-|---------|-------|----------------|
-| Q1 | Foundations | "The Visibility-Attention Gap", "The 11 Million Bit Filter", "First Mention Wins" |
-| Q2 | Applied Science | "Pre-suasion in Pre-Search", "The Messy Middle Gets Messier", "Emotional Salience in Rational Answers" |
-| Q3 | Measurement | "Share of Model", "The GEO Playbook", "Citations as Currency" |
-| Q4 | Advanced | "The Alchemy of AI Optimization", "Cognitive Load in the AI Interface", "Status Quo in a Disrupted World" |
+### 2. Catchlight Newsletter Engine (`/guided`)
 
-### Multi-Channel Publishing
-- **Newsletter-First**: Full Light goes to Kit (ConvertKit) subscribers
-- **LinkedIn Teaser**: Auto-generated hook + call-to-action
-- **Audio Narration**: ElevenLabs voice generation for podcast/video repurposing
+A 52-week newsletter system focused on AI visibility and attention science:
 
----
+- Choose from 52 pre-planned weekly topics ("Lights")
+- Generate 2 article styles: "Sharp & Provocative" vs "Thoughtful & Nuanced"
+- Embed research charts from the book library
+- Publish to Kit as a draft broadcast or copy a LinkedIn teaser
+- Generate audio narration via ElevenLabs
 
-## How It Works
+### 3. Automated Weekly Publishing
 
-### Architecture
+A Vercel Cron job (Mondays at 9 AM) can automatically:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CATCHLIGHT SYSTEM                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    │
-│   │   Content    │    │     AI       │    │  Publishing  │    │
-│   │   Calendar   │───▶│  Generation  │───▶│   Channels   │    │
-│   │              │    │              │    │              │    │
-│   │ 52 weeks of  │    │ Claude API   │    │ • Kit (email)│    │
-│   │ AI + Attn    │    │ generates    │    │ • LinkedIn   │    │
-│   │ topics       │    │ 2 voice      │    │ • Audio/Video│    │
-│   │              │    │ options      │    │              │    │
-│   └──────────────┘    └──────────────┘    └──────────────┘    │
-│                                                                 │
-│   ┌──────────────────────────────────────────────────────────┐ │
-│   │                    GUIDED EDITOR                          │ │
-│   │                                                           │ │
-│   │  Step 1: Voice    Step 2: Visuals    Step 3: Publish     │ │
-│   │  ┌─────────┐      ┌─────────┐        ┌─────────┐         │ │
-│   │  │ Sharp   │      │ Select  │        │ Kit     │         │ │
-│   │  │   vs    │  ──▶ │ Charts  │   ──▶  │ LinkedIn│         │ │
-│   │  │Nuanced  │      │         │        │ Audio   │         │ │
-│   │  └─────────┘      └─────────┘        └─────────┘         │ │
-│   └──────────────────────────────────────────────────────────┘ │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Content Generation Flow
-
-1. **User selects a Light** from the 52-week calendar
-2. **Claude API generates** two versions with different voices
-3. **User selects preferred version** and optionally adds charts
-4. **Content is optimized** for 450-600 words (optimal newsletter length)
-5. **User publishes** to newsletter, copies LinkedIn teaser, or generates audio
-
-### Light Structure
-
-Each Light follows a proven 5-part structure:
-
-```
-1. HOOK (1 line)
-   - Pattern interrupt or provocative question
-
-2. AI REALITY (100-150 words)
-   - What's actually happening in LLMs
-   - Real examples from ChatGPT/Perplexity/Gemini
-
-3. BRAIN SCIENCE (100-150 words)
-   - The psychology/behavioral science behind it
-   - Academic research translated for practitioners
-
-4. THE BRIDGE (100-150 words)
-   - Where AI visibility and attention science connect
-   - The non-obvious insight
-
-5. TAKEAWAY (50 words)
-   - One actionable principle
-   - Written for skeptical marketing directors
-```
+1. Generate a full article from research briefs (Claude)
+2. Create a DALL-E 3 header image
+3. Save to Vercel Blob storage
+4. Publish teaser posts to LinkedIn/Twitter via Late.dev
 
 ---
 
-## Technology Stack
+## How Content Generation Works
 
-### Frontend
-- **Next.js 14** - React framework with App Router
-- **Tailwind CSS** - Utility-first styling
-- **Lucide React** - Icon library
-- **Dark theme** with amber accents (Catchlight brand)
+### Strategy Phase
 
-### Backend APIs
-- **Claude API (Anthropic)** - Content generation with claude-3-5-sonnet
-- **Kit (ConvertKit) API** - Newsletter draft creation
-- **ElevenLabs API** - Voice synthesis for audio content
-- **Vercel Blob** - Audio file storage
+The strategy endpoint receives starred target roles and generates a 12-week plan:
 
-### Infrastructure
-- **Vercel** - Hosting and serverless functions
-- **Vercel Cron** - Scheduled automation (optional)
-- **GitHub** - Version control
+- 2 LinkedIn posts per week, rotating across knowledge domains
+- 1 newsletter every 2 weeks, weaving multiple insights together
+- Each content piece references a specific curated insight (e.g. `bs-003` = Shotton's Pratfall Effect)
+- Target role requirements are used for subtle capability alignment, never explicit mention
+
+### Generation Phase
+
+When you click "Generate" on a content piece:
+
+1. The system looks up the curated insight by ID from `knowledge-base.js`
+2. Injects the researcher, framework, and key finding into the prompt
+3. Claude writes research-first content with a practitioner interpretation
+4. Target roles inform the tone subtly -- the content never names employers, clients, or products
+
+### Example Output
+
+A LinkedIn post generated from insight `bs-003` (Pratfall Effect):
+
+> *The brands that admit their flaws outperform the ones that claim perfection.*
+>
+> *This isn't marketing wisdom. It's cognitive science.*
+>
+> *Richard Shotton documents this in "The Choice Factory" through the pratfall effect...*
 
 ---
 
 ## Project Structure
 
 ```
-linkedin-article-automation/
-├── app/
-│   ├── api/
-│   │   ├── guided/
-│   │   │   ├── articles/route.js    # Light generation (Claude API)
-│   │   │   └── charts/route.js      # Chart retrieval
-│   │   ├── publish/
-│   │   │   ├── kit/route.js         # Kit newsletter publishing
-│   │   │   └── beehiiv/route.js     # Legacy Beehiiv integration
-│   │   ├── video/
-│   │   │   └── generate/route.js    # ElevenLabs audio generation
-│   │   ├── generate/route.js        # Legacy article generation
-│   │   └── cron/route.js            # Scheduled automation
-│   ├── guided/
-│   │   └── page.js                  # Guided editor UI (main interface)
-│   ├── lib/
-│   │   ├── catchlight-calendar.json # 52-week content calendar
-│   │   └── calendar.js              # Legacy calendar
-│   ├── page.js                      # Home/dashboard
-│   └── layout.js                    # Root layout
-├── public/
-│   └── charts/                      # Extracted research charts
-├── package.json
-└── README.md
+app/
+  page.js                          # Home -- links to /guided and /career
+  career/page.js                   # Career Command Center (4-step wizard)
+  guided/page.js                   # Catchlight newsletter engine
+
+  api/
+    career/
+      scan/route.js                # Job search (SerpAPI + Claude fallback)
+      strategy/route.js            # 12-week content calendar generation
+      generate/route.js            # LinkedIn post & newsletter generation
+      data/route.js                # Campaign persistence (Vercel Blob)
+      kit-stats/route.js           # Kit broadcast metrics
+    guided/
+      articles/route.js            # Generate 2 article styles per week
+      charts/route.js              # Fetch available charts for a week
+    publish/
+      route.js                     # Late.dev social scheduling
+      kit/route.js                 # ConvertKit draft broadcast
+      beehiiv/route.js             # Beehiiv draft post
+    generate/route.js              # Weekly article generator from research briefs
+    articles/route.js              # Blob storage for articles
+    video/generate/route.js        # ElevenLabs audio narration
+    cron/route.js                  # Weekly automated publishing
+
+  lib/
+    knowledge-base.js              # 6 domains, 54 curated research insights
+    career-data.js                 # Author voice, newsletter prompt, constants
+    calendar.js                    # Article scheduling logic
+    catchlight-calendar.json       # 52-week topic calendar
+    research-briefs.json           # Structured research content for articles
+    book-pages-urls.json           # Chart/figure URLs keyed by week
 ```
 
 ---
 
-## Setup Guide
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- Anthropic API key (Claude)
-- Kit (ConvertKit) account + API secret
-- ElevenLabs API key (optional, for audio)
 
-### Step 1: Clone and Install
+- Node.js 18+
+- A Vercel account (for Blob storage and deployment)
+- Anthropic API key (Claude)
+
+### Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/linkedin-article-automation.git
+git clone https://github.com/mohamedali170683-dotcom/linkedin-article-automation.git
 cd linkedin-article-automation
 npm install
 ```
 
-### Step 2: Environment Variables
+### Environment Variables
 
-Create `.env.local`:
+Create a `.env.local` file:
 
 ```env
 # Required
-ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_API_KEY=               # Claude API key
+BLOB_READ_WRITE_TOKEN=           # Vercel Blob storage token
+CRON_SECRET=                     # Authentication for cron endpoint
 
-# Newsletter (Kit/ConvertKit)
-KIT_API_SECRET=...
+# Newsletter
+KIT_API_SECRET=                  # ConvertKit API key
 
-# Audio Generation (Optional)
-ELEVENLABS_API_KEY=...
+# Job scanning (optional -- falls back to Claude search)
+SERPAPI_KEY=                     # SerpAPI for Google Jobs
 
-# Vercel (auto-set in production)
-BLOB_READ_WRITE_TOKEN=...
+# Social publishing (optional)
+LATE_API_KEY=                    # Late.dev scheduling
+LATE_LINKEDIN_ACCOUNT_ID=       # LinkedIn account ID
+LATE_TWITTER_ACCOUNT_ID=        # Twitter account ID
+
+# Image & audio (optional)
+OPENAI_API_KEY=                  # DALL-E 3 header images
+ELEVENLABS_API_KEY=              # Audio narration
+
+# Alternate newsletter platform (optional)
+BEEHIIV_API_KEY=                 # Beehiiv publishing
+BEEHIIV_PUBLICATION_ID=          # Beehiiv publication ID
+
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
-### Step 3: Get API Keys
-
-**Anthropic (Claude)**
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Create API key
-3. Add to `ANTHROPIC_API_KEY`
-
-**Kit (ConvertKit)**
-1. Go to [app.kit.com](https://app.kit.com)
-2. Settings → Developer → API Secret
-3. Add to `KIT_API_SECRET`
-
-**ElevenLabs (Optional)**
-1. Go to [elevenlabs.io](https://elevenlabs.io)
-2. Profile → API Keys
-3. Add to `ELEVENLABS_API_KEY`
-
-### Step 4: Run Locally
+### Run Locally
 
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000/guided` for the Catchlight editor.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Step 5: Deploy to Vercel
+---
+
+## API Endpoints
+
+### Career Command Center
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/career/scan` | POST | Scan job market (SerpAPI or Claude fallback) |
+| `/api/career/strategy` | POST | Generate 12-week content calendar by knowledge domain |
+| `/api/career/generate` | POST | Generate LinkedIn post or newsletter article from curated insight |
+| `/api/career/data` | GET/POST | Load/save campaign data (Vercel Blob) |
+| `/api/career/kit-stats` | GET | Fetch Kit broadcast metrics and subscriber count |
+
+### Catchlight Newsletter
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/guided/articles` | POST | Generate 2 article styles for a given week |
+| `/api/guided/charts` | GET | Get available research charts for a week |
+
+### Publishing
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/publish` | POST | Schedule posts to LinkedIn/Twitter via Late.dev |
+| `/api/publish/kit` | POST | Create Kit (ConvertKit) draft broadcast |
+| `/api/publish/beehiiv` | POST | Create Beehiiv draft post |
+
+### Content & Media
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/generate` | POST | Full article generation from research briefs |
+| `/api/articles` | GET/POST | List/save articles in Vercel Blob |
+| `/api/video/generate` | POST | Generate ElevenLabs audio narration |
+| `/api/cron` | GET | Weekly automated generation + publishing |
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 14.0.4 (App Router)
+- **AI**: Claude claude-sonnet-4-20250514 (Anthropic SDK)
+- **Storage**: Vercel Blob
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Newsletter**: Kit (ConvertKit) API
+- **Job Search**: SerpAPI (Google Jobs)
+- **Social**: Late.dev scheduling API
+- **Images**: DALL-E 3 (OpenAI)
+- **Audio**: ElevenLabs text-to-speech
+- **Deployment**: Vercel with GitHub auto-deploy
+
+---
+
+## Knowledge Base
+
+The content engine is powered by `knowledge-base.js`, a curated library of 54 research insights extracted from marketing science, behavioral economics, and strategy literature. Key sources:
+
+| Author | Work | Domain |
+|--------|------|--------|
+| Daniel Kahneman | Thinking, Fast and Slow | Behavioral Science |
+| Richard Shotton | The Choice Factory, The Illusion of Choice | Behavioral Science |
+| Dan Ariely | Predictably Irrational | Behavioral Science |
+| Thaler & Sunstein | Nudge | Behavioral Science |
+| Rory Sutherland | Alchemy | Behavioral Science / Persuasion |
+| Byron Sharp | How Brands Grow | Brand Effectiveness |
+| Les Binet & Peter Field | The Long and the Short of It | Brand Effectiveness |
+| Jenni Romaniuk | Building Distinctive Brand Assets | Brand Effectiveness |
+| Robert Cialdini | Influence, Pre-Suasion | Persuasion & Influence |
+| Google Research | Decoding Decisions (Messy Middle) | Consumer Psychology |
+| Will Storr | The Status Game, The Science of Storytelling | Consumer Psychology |
+| John Kotter | Leading Change | Leadership & Strategy |
+| Michael Porter | Competitive Strategy | Leadership & Strategy |
+| Peter Senge | The Fifth Discipline | Leadership & Strategy |
+| Carnegie Mellon | GEO: Generative Engine Optimization | Marketing Innovation |
+
+Each insight includes the framework name, key finding, content hooks, and suggested angles for both LinkedIn and newsletter formats.
+
+---
+
+## Deployment
+
+Push to `main` triggers automatic Vercel deployment.
 
 ```bash
-vercel deploy
+npm run build    # Verify build passes locally
+git push         # Deploy to Vercel
 ```
 
-Or connect your GitHub repo to Vercel for automatic deployments.
-
----
-
-## API Reference
-
-### POST `/api/guided/articles`
-Generate two Light options for a given week.
-
-**Request:**
-```json
-{
-  "week": 1
-}
-```
-
-**Response:**
-```json
-{
-  "options": [
-    {
-      "title": "The Visibility-Attention Gap",
-      "subtitle": "Your brand appears in ChatGPT. Nobody clicks. Why?",
-      "content": "...",
-      "styleName": "Sharp & Provocative",
-      "styleDescription": "Contrarian, challenges conventional wisdom"
-    },
-    {
-      "title": "The Visibility-Attention Gap",
-      "subtitle": "Your brand appears in ChatGPT. Nobody clicks. Why?",
-      "content": "...",
-      "styleName": "Thoughtful & Nuanced",
-      "styleDescription": "Balanced, acknowledges complexity"
-    }
-  ]
-}
-```
-
-### POST `/api/publish/kit`
-Create a draft broadcast in Kit (ConvertKit).
-
-**Request:**
-```json
-{
-  "title": "Light title",
-  "subtitle": "Optional subtitle",
-  "content": "Light content in markdown",
-  "charts": [{ "imageUrl": "...", "caption": "..." }]
-}
-```
-
-### POST `/api/video/generate`
-Generate AI voice narration using ElevenLabs.
-
-**Request:**
-```json
-{
-  "title": "Light title",
-  "content": "Light content",
-  "charts": []
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "audioUrl": "https://...",
-  "script": "Condensed narration script"
-}
-```
-
----
-
-## Content Calendar Preview
-
-### Q1: Foundations (Weeks 1-13)
-| Week | Light | Hook |
-|------|-------|------|
-| 1 | The Visibility-Attention Gap | Your brand appears in ChatGPT. Nobody clicks. Why? |
-| 2 | The 11 Million Bit Filter | AI processes everything. Humans process almost nothing. |
-| 3 | Social Proof in the Algorithm | AI is counting your reviews. Here's what it sees. |
-| 4 | First Mention Wins | The first brand ChatGPT names sets the anchor. Is it you? |
-| ... | ... | ... |
-
-### Q2: Applied Science (Weeks 14-26)
-| Week | Light | Hook |
-|------|-------|------|
-| 14 | Pre-suasion in Pre-Search | Users form preferences before they type. |
-| 15 | Framing the AI Answer | Same facts, different frame, different brand wins. |
-| 18 | Attention is the New Reach | AI reach is infinite. Attention is still scarce. |
-| ... | ... | ... |
-
-### Q3: Measurement (Weeks 27-39)
-| Week | Light | Hook |
-|------|-------|------|
-| 27 | Share of Model | SOV becomes SOM. Share of Voice becomes Share of Model. |
-| 30 | The GEO Playbook | SEO had 25 years. GEO has maybe 2. Here's the playbook. |
-| 31 | Citations as Currency | In AI search, being cited beats being ranked. |
-| ... | ... | ... |
-
-### Q4: Advanced Applications (Weeks 40-52)
-| Week | Light | Hook |
-|------|-------|------|
-| 40 | The Alchemy of AI Optimization | Some things that shouldn't work in AI, work. |
-| 48 | Cognitive Load in the AI Interface | AI reduces load. Brands that add load lose. |
-| 52 | Annual Synthesis: The Year in Lights | 52 Lights. One coherent view. |
-
----
-
-## Brand Guidelines
-
-### Terminology
-- **Light**: A single newsletter issue (not "article" or "post")
-- **Light Catchers**: Subscribers
-- **Catchlight**: The newsletter brand
-
-### Voice Characteristics
-- Sharp, confident, data-driven
-- Speaks to skeptical marketing directors
-- Challenges conventional wisdom with evidence
-- Never uses em-dashes
-- Short paragraphs (2-3 sentences max)
-- 450-600 words per Light
-
-### Visual Identity
-- **Primary**: Amber/gold (#F59E0B)
-- **Background**: Dark slate (#0F172A, #1E293B)
-- **Icon**: Sun (lucide-react)
-
----
-
-## Roadmap
-
-- [x] Core Light generation with Claude
-- [x] Kit (ConvertKit) integration
-- [x] ElevenLabs audio generation
-- [x] 52-week AI + Attention calendar
-- [x] Dark theme Catchlight UI
-- [ ] Full video rendering with Remotion
-- [ ] Automated weekly publishing (Vercel Cron)
-- [ ] LinkedIn API integration (when available)
-- [ ] Analytics dashboard
+Make sure all required environment variables are set in your Vercel project settings.
 
 ---
 
 ## License
 
-MIT License - See LICENSE file
+Private project.
 
 ---
 
-## Credits
+## Research Sources
 
-Built by Mohamed Hamdy | WPP Media Germany
-
-**Research Sources:**
 - Ehrenberg-Bass Institute
-- Daniel Kahneman (Thinking, Fast and Slow)
-- Byron Sharp (How Brands Grow)
-- Rory Sutherland (Alchemy)
-- Robert Cialdini (Influence, Pre-Suasion)
-- Les Binet & Peter Field (The Long and Short of It)
-
----
-
-*Catchlight: Where AI visibility meets the science of attention.*
+- IPA / WARC Effectiveness Database
+- Google Messy Middle Research
+- Carnegie Mellon GEO Research
+- LinkedIn B2B Institute / ESOV Research
