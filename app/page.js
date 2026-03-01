@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sun, Briefcase, ArrowRight, Sparkles, Target } from 'lucide-react';
+import { Sun, Briefcase, Calendar, ArrowRight, Sparkles, Target } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -14,7 +14,7 @@ export default function Home() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Catchlight */}
           <Link
             href="/guided"
@@ -34,6 +34,28 @@ export default function Home() {
             </p>
             <div className="flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:gap-3 transition-all">
               Open Editor <ArrowRight className="w-4 h-4" />
+            </div>
+          </Link>
+
+          {/* Weekly Engine */}
+          <Link
+            href="/weekly"
+            className="group bg-slate-800 border border-slate-700 rounded-2xl p-6 hover:border-amber-500/50 transition-all"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">Weekly Engine</h2>
+                <p className="text-xs text-slate-400">Content Pipeline</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-300 mb-4">
+              Sunday article to Thursday pill. Generate, publish, and copy your weekly content pipeline in one place.
+            </p>
+            <div className="flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:gap-3 transition-all">
+              Open Pipeline <ArrowRight className="w-4 h-4" />
             </div>
           </Link>
 
