@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { title, subtitle, content, charts } = await request.json();
+    const { title, subtitle, content, charts, images } = await request.json();
 
     const apiSecret = process.env.KIT_API_SECRET;
 
@@ -28,11 +28,48 @@ export async function POST(request) {
       ? charts.map((_, i) => Math.floor((i + 1) * paragraphs.length / (charts.length + 1)))
       : [];
 
-    // Build HTML with charts inserted
+    // Map section headers to image positions (when we see a header, the previous section just ended)
+    const SECTION_TO_POSITION = {
+      'The Research': 'after-hook',
+      'The Framework': 'after-research',
+      'The Bridge': 'after-framework',
+      'The Implication': 'after-bridge',
+      'Coda': 'after-implication',
+    };
+
+    // Helper: render an image block
+    function renderImageHtml(img) {
+      return `
+        <div style="text-align: center; margin: 32px 0;">
+          <img src="${img.url}" alt="${escapeHtml(img.caption || '')}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+          ${img.caption ? `<p style="font-size: 13px; color: #888; margin-top: 12px; font-style: italic;">${escapeHtml(img.caption)}</p>` : ''}
+        </div>
+      `;
+    }
+
+    // Insert header-position images before article content
+    if (images && images.length > 0) {
+      images.filter(img => img.position === 'header').forEach(img => {
+        htmlContent += renderImageHtml(img);
+      });
+    }
+
+    // Build HTML with charts and images inserted
     paragraphs.forEach((para, idx) => {
       // Handle section headers (lines starting and ending with **)
       if (para.startsWith('**') && para.endsWith('**')) {
         const headerText = para.replace(/\*\*/g, '');
+
+        // Insert images for the section that just ended
+        if (images && images.length > 0) {
+          const position = SECTION_TO_POSITION[headerText];
+          if (position) {
+            images.filter(img => img.position === position).forEach(img => {
+              htmlContent += renderImageHtml(img);
+            });
+          }
+        }
+
         htmlContent += `<h2 style="font-size: 22px; font-weight: bold; margin-top: 32px; margin-bottom: 16px; color: #1a1a1a;">${escapeHtml(headerText)}</h2>`;
       } else {
         // Regular paragraph - handle inline bold

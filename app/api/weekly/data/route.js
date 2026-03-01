@@ -74,6 +74,10 @@ export async function POST(request) {
     // Deep merge article, promoPost, pills if they exist in both
     if (body.article && current.article) {
       updated.article = { ...current.article, ...body.article };
+      // Images array: replace entirely (client sends full array state)
+      if (body.article.images !== undefined) {
+        updated.article.images = body.article.images;
+      }
     }
     if (body.promoPost && current.promoPost) {
       updated.promoPost = { ...current.promoPost, ...body.promoPost };

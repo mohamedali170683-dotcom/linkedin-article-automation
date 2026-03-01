@@ -2,23 +2,10 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import catchlightCalendar from '../../../lib/catchlight-calendar.json';
 import bookPagesUrls from '../../../lib/book-pages-urls.json';
-import { CURATED_INSIGHTS } from '../../../lib/knowledge-base';
 import { AUTHOR_VOICE } from '../../../lib/career-data';
+import { findMatchingInsights } from '../../../lib/insight-matcher';
 
 export const maxDuration = 120;
-
-// Match Light sources to curated insights by author name
-function findMatchingInsights(lightSources) {
-  if (!lightSources || lightSources.length === 0) return [];
-  return CURATED_INSIGHTS.filter(ins => {
-    const authorLast = ins.source.author.toLowerCase().split(' ').pop();
-    const bookLower = ins.source.book.toLowerCase();
-    return lightSources.some(src => {
-      const srcLower = src.toLowerCase();
-      return srcLower.includes(authorLast) || bookLower.includes(srcLower.split('(')[0].trim().toLowerCase());
-    });
-  });
-}
 
 const ARTICLE_SYSTEM_PROMPT = `You are writing a deep research article for Catchlight, a newsletter about "where AI visibility meets the science of attention."
 
