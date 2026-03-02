@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
 
-function blobKey(week) {
-  return `catchlight-weekly-${week}.json`;
+// Vercel Blob appends a random hash to pathnames (e.g. "key-aBcD.json"),
+// so the list prefix must NOT include the extension.
+function blobPrefix(week) {
+  return `catchlight-weekly-${week}`;
 }
 
 async function getWeekData(week) {
   try {
-    const key = blobKey(week);
-    const { blobs } = await list({ prefix: key });
+    const prefix = blobPrefix(week);
+    const { blobs } = await list({ prefix });
     if (blobs.length > 0) {
       const response = await fetch(blobs[0].url);
       return await response.json();
@@ -20,12 +22,12 @@ async function getWeekData(week) {
 }
 
 async function saveWeekData(week, data) {
-  const key = blobKey(week);
+  const prefix = blobPrefix(week);
   try {
-    const { blobs } = await list({ prefix: key });
+    const { blobs } = await list({ prefix });
     for (const blob of blobs) await del(blob.url);
   } catch {}
-  await put(key, JSON.stringify(data), {
+  await put(`${prefix}.json`, JSON.stringify(data), {
     access: 'public',
     contentType: 'application/json',
   });
