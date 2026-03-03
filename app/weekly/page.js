@@ -703,6 +703,68 @@ export default function WeeklyEngine() {
     setIsGeneratingInfographic(false);
   };
 
+  const videoFileRef = useRef(null);
+  const [scriptCopied, setScriptCopied] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+
+  const copyScriptAndOpenNotebookLM = async () => {
+    const pill = weekState?.pills?.[1];
+    if (!pill?.videoScript) return;
+
+    const textToCopy = [
+      'VIDEO SCRIPT:',
+      pill.videoScript,
+      '',
+      `Duration: ${pill.duration || 55}s`,
+    ].join('\n');
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setScriptCopied(true);
+      setTimeout(() => setScriptCopied(false), 3000);
+    } catch {
+      alert('Could not copy to clipboard. Please copy the script manually.');
+      return;
+    }
+
+    window.open('https://notebooklm.google.com', '_blank');
+  };
+
+  const uploadVideo = async (file) => {
+    if (!file || !weekNumber) return;
+
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Only MP4, WebM, MOV, or GIF files are allowed.');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      alert('Video must be under 50MB.');
+      return;
+    }
+
+    setIsUploadingVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('weekNumber', weekNumber.toString());
+      formData.append('slot', 'video');
+
+      const res = await fetch('/api/weekly/image', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const updatedPills = [...(weekState.pills || [null, null, null])];
+      updatedPills[1] = { ...updatedPills[1], videoUrl: data.image.url };
+      const updated = { ...weekState, pills: updatedPills };
+      setWeekState(updated);
+      await saveWeekState({ pills: updatedPills });
+    } catch (e) {
+      alert('Upload failed: ' + e.message);
+    }
+    setIsUploadingVideo(false);
+  };
+
   const generateAllContent = async () => {
     setIsGeneratingAll(true);
     await generatePromo();
@@ -1134,6 +1196,54 @@ export default function WeeklyEngine() {
                               {pill.duration && <span className="text-xs text-purple-400/60">{pill.duration}s</span>}
                             </div>
                             <pre className="text-xs text-slate-300 whitespace-pre-wrap font-[var(--font-dm-sans)]">{pill.videoScript}</pre>
+
+                            {/* NotebookLM Video — Semi-Auto */}
+                            {idx === 1 && (
+                              <div className="mt-3 pt-3 border-t border-purple-500/20">
+                                {pill.videoUrl ? (
+                                  <div className="space-y-2">
+                                    <div className="relative rounded-lg overflow-hidden border border-purple-500/30">
+                                      <video src={pill.videoUrl} controls className="w-full h-auto rounded-lg" />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <a href={pill.videoUrl} target="_blank" rel="noopener noreferrer" download
+                                        className="px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-lg text-xs flex items-center gap-1 hover:bg-purple-500/30">
+                                        <Download className="w-3 h-3" />Download
+                                      </a>
+                                      <button onClick={() => videoFileRef.current?.click()}
+                                        className="px-3 py-1.5 border border-purple-500/30 text-purple-400 rounded-lg text-xs flex items-center gap-1 hover:bg-purple-500/10">
+                                        <RefreshCw className="w-3 h-3" />Replace
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    <button onClick={copyScriptAndOpenNotebookLM}
+                                      className="w-full px-3 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-purple-500/30">
+                                      {scriptCopied ? (
+                                        <><Check className="w-3.5 h-3.5" />Script Copied! Opening...</>
+                                      ) : (
+                                        <><ClipboardCopy className="w-3.5 h-3.5" />Copy Script &amp; Open NotebookLM</>
+                                      )}
+                                    </button>
+                                    <button onClick={() => videoFileRef.current?.click()}
+                                      disabled={isUploadingVideo}
+                                      className="w-full px-3 py-2 border border-dashed border-purple-500/30 text-purple-400/70 rounded-lg text-xs flex items-center justify-center gap-1.5 hover:bg-purple-500/5 hover:text-purple-400 disabled:opacity-50">
+                                      {isUploadingVideo ? (
+                                        <><Loader2 className="w-3.5 h-3.5 animate-spin" />Uploading...</>
+                                      ) : (
+                                        <><Upload className="w-3.5 h-3.5" />Upload Video from NotebookLM</>
+                                      )}
+                                    </button>
+                                    <p className="text-[10px] text-slate-500 text-center">
+                                      1. Copy script → 2. Create video in NotebookLM → 3. Download → 4. Upload here
+                                    </p>
+                                  </div>
+                                )}
+                                <input ref={videoFileRef} type="file" accept="video/*,.gif" className="hidden"
+                                  onChange={(e) => { if (e.target.files?.[0]) uploadVideo(e.target.files[0]); e.target.value = ''; }} />
+                              </div>
+                            )}
                           </div>
                         )}
 
