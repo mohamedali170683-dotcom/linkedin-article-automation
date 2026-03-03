@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
-import { NotebookLMClient, ArtifactType, ArtifactState, SourceStatus } from 'notebooklm-kit';
+import {
+  NotebookLMClient,
+  ArtifactType,
+  ArtifactState,
+  SourceStatus,
+  fetchInfographic,
+} from 'notebooklm-kit';
 
-export const maxDuration = 300; // 5 min (Vercel Pro allows up to 300s)
+export const maxDuration = 300;
 
 const POLL_INTERVAL_SOURCE = 2000;
 const POLL_TIMEOUT_SOURCE = 40000;
 const POLL_INTERVAL_ARTIFACT = 4000;
-const POLL_TIMEOUT_ARTIFACT = 240000; // 4 min for artifact generation
+const POLL_TIMEOUT_ARTIFACT = 240000;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -119,23 +125,19 @@ export async function POST(request) {
       });
       log('artifact', `Created ${artifact.artifactId}, state=${artifact.state} (${Date.now() - startTime}ms)`);
 
-      // If already ready (unlikely), skip polling
+      // 6. Poll until artifact is ready
       let readyArtifact = artifact;
-
       if (artifact.state === ArtifactState.CREATING) {
         log('artifact', 'Polling for completion...');
         readyArtifact = await waitForArtifact(client, artifact.artifactId, notebookId);
       }
 
       if (!readyArtifact) {
-        log('artifact', `TIMEOUT after ${Date.now() - startTime}ms`);
         return NextResponse.json(
-          { error: `Infographic generation timed out after ${Math.round((Date.now() - startTime) / 1000)}s. Try again.` },
+          { error: `Infographic generation timed out after ${Math.round((Date.now() - startTime) / 1000)}s.` },
           { status: 504 }
         );
       }
-
-      log('artifact', `Final state=${readyArtifact.state} (${Date.now() - startTime}ms)`);
 
       if (readyArtifact.state === ArtifactState.FAILED) {
         return NextResponse.json(
@@ -144,42 +146,52 @@ export async function POST(request) {
         );
       }
 
-      // 6. Get infographic image
-      const imageUrl = readyArtifact.imageUrl;
-      log('image', `imageUrl: ${imageUrl ? 'found' : 'MISSING'}`);
-      log('image', `Full artifact keys: ${Object.keys(readyArtifact).join(', ')}`);
+      log('artifact', `Ready! (${Date.now() - startTime}ms)`);
 
-      if (!imageUrl) {
-        // Try alternative: the artifact might have image data directly
-        if (readyArtifact.imageData) {
-          log('image', 'Using imageData buffer directly');
-          const mimeType = readyArtifact.mimeType || 'image/png';
-          const imgBuffer = Buffer.from(readyArtifact.imageData);
-          const blobUrl = await storeInfographic(weekNumber, imgBuffer, mimeType);
-          return NextResponse.json({ success: true, infographicUrl: blobUrl });
+      // 7. Use fetchInfographic with downloadImage: true to get authenticated image bytes
+      log('image', 'Fetching infographic image with auth cookies...');
+      const rpcClient = await client.getRPCClient();
+      const infographicData = await fetchInfographic(
+        rpcClient,
+        readyArtifact.artifactId,
+        notebookId,
+        { downloadImage: true, cookies }
+      );
+
+      log('image', `Got image: url=${!!infographicData.imageUrl}, data=${!!infographicData.imageData}, mime=${infographicData.mimeType}`);
+
+      if (!infographicData.imageData) {
+        // Fallback: try downloading from imageUrl with cookies as header
+        if (infographicData.imageUrl) {
+          log('image', 'imageData missing, trying authenticated fetch...');
+          const imgRes = await fetch(infographicData.imageUrl, {
+            headers: { 'Cookie': cookies },
+          });
+
+          if (imgRes.ok) {
+            const ct = imgRes.headers.get('content-type') || 'image/png';
+            const imgBuf = Buffer.from(await imgRes.arrayBuffer());
+            log('image', `Fallback download: ${imgBuf.length} bytes, type=${ct}`);
+
+            if (imgBuf.length > 1000 && !ct.includes('html')) {
+              const blobUrl = await storeInfographic(weekNumber, imgBuf, ct);
+              return NextResponse.json({ success: true, infographicUrl: blobUrl });
+            }
+          }
         }
 
         return NextResponse.json(
-          { error: 'No infographic image returned. Artifact keys: ' + Object.keys(readyArtifact).join(', ') },
+          { error: 'Could not download infographic image. The image URL requires Google auth.' },
           { status: 500 }
         );
       }
 
-      // 7. Download and store in Vercel Blob
-      log('image', 'Downloading image...');
-      const imgResponse = await fetch(imageUrl);
-      if (!imgResponse.ok) {
-        return NextResponse.json(
-          { error: `Failed to download infographic: ${imgResponse.status}` },
-          { status: 500 }
-        );
-      }
+      // 8. Store image in Vercel Blob
+      const mimeType = infographicData.mimeType || 'image/png';
+      const imgBuffer = Buffer.from(infographicData.imageData);
+      log('image', `Storing ${imgBuffer.length} bytes as ${mimeType}`);
 
-      const contentType = imgResponse.headers.get('content-type') || 'image/png';
-      const imgBuffer = Buffer.from(await imgResponse.arrayBuffer());
-      log('image', `Downloaded ${imgBuffer.length} bytes, type=${contentType}`);
-
-      const blobUrl = await storeInfographic(weekNumber, imgBuffer, contentType);
+      const blobUrl = await storeInfographic(weekNumber, imgBuffer, mimeType);
       log('done', `Stored at ${blobUrl} (total: ${Date.now() - startTime}ms)`);
 
       return NextResponse.json({
