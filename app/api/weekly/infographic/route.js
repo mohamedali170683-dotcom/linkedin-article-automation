@@ -2,21 +2,24 @@ import { NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
 import { NotebookLMClient, ArtifactType, ArtifactState, SourceStatus } from 'notebooklm-kit';
 
-export const maxDuration = 120;
+export const maxDuration = 300; // 5 min (Vercel Pro allows up to 300s)
 
 const POLL_INTERVAL_SOURCE = 2000;
-const POLL_TIMEOUT_SOURCE = 30000;
-const POLL_INTERVAL_ARTIFACT = 3000;
-const POLL_TIMEOUT_ARTIFACT = 90000;
+const POLL_TIMEOUT_SOURCE = 40000;
+const POLL_INTERVAL_ARTIFACT = 4000;
+const POLL_TIMEOUT_ARTIFACT = 240000; // 4 min for artifact generation
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function log(step, detail) {
+  console.log(`[infographic] ${step}: ${detail}`);
+}
+
 async function storeInfographic(weekNumber, imageBuffer, mimeType = 'image/png') {
   const prefix = `infographics/week-${weekNumber}`;
 
-  // Clean up old infographic blobs for this week
   try {
     const { blobs } = await list({ prefix });
     for (const blob of blobs) await del(blob.url);
@@ -32,10 +35,11 @@ async function storeInfographic(weekNumber, imageBuffer, mimeType = 'image/png')
 }
 
 export async function POST(request) {
+  const startTime = Date.now();
+
   try {
     const { weekNumber, articleContent, infographicBrief, dataPoints } = await request.json();
 
-    // Validate inputs
     if (!weekNumber || weekNumber < 1 || weekNumber > 52) {
       return NextResponse.json({ error: 'weekNumber must be 1-52' }, { status: 400 });
     }
@@ -47,52 +51,55 @@ export async function POST(request) {
       );
     }
 
-    // Check NotebookLM credentials
     const authToken = process.env.NOTEBOOKLM_AUTH_TOKEN;
     const cookies = process.env.NOTEBOOKLM_COOKIES;
 
     if (!authToken || !cookies) {
       return NextResponse.json(
-        {
-          authError: true,
-          error: 'NotebookLM credentials not configured. Set NOTEBOOKLM_AUTH_TOKEN and NOTEBOOKLM_COOKIES in your environment variables.',
-        },
+        { authError: true, error: 'NotebookLM credentials not configured.' },
         { status: 401 }
       );
     }
 
-    // Initialize NotebookLM client
     const client = new NotebookLMClient({
       authToken,
       cookies,
-      autoRefresh: false, // Short-lived serverless, no need for refresh
+      autoRefresh: false,
     });
 
     let notebookId = null;
 
     try {
+      log('connect', 'Connecting to NotebookLM...');
       await client.connect();
+      log('connect', `Done (${Date.now() - startTime}ms)`);
 
       // 1. Create notebook
+      log('notebook', 'Creating notebook...');
       const notebook = await client.notebooks.create({
         title: `Catchlight Week ${weekNumber} Infographic`,
       });
       notebookId = notebook.projectId;
+      log('notebook', `Created ${notebookId} (${Date.now() - startTime}ms)`);
 
-      // 2. Build source content from brief + data points + article excerpt
+      // 2. Build source content
       const sourceContent = buildSourceContent(infographicBrief, dataPoints, articleContent);
+      log('source', `Content built: ${sourceContent.length} chars`);
 
       // 3. Add text source
+      log('source', 'Adding text source...');
       const sourceResult = await client.sources.addFromText(notebookId, {
         title: `Week ${weekNumber} Infographic Data`,
         content: sourceContent,
       });
-
-      // addFromText returns string (sourceId) or AddSourceResult if chunked
       const sourceId = typeof sourceResult === 'string' ? sourceResult : sourceResult.sourceId;
+      log('source', `Added ${sourceId} (${Date.now() - startTime}ms)`);
 
       // 4. Wait for source processing
+      log('source', 'Waiting for source processing...');
       const sourceReady = await waitForSource(client, notebookId, sourceId);
+      log('source', `Ready: ${sourceReady} (${Date.now() - startTime}ms)`);
+
       if (!sourceReady) {
         return NextResponse.json(
           { error: 'Source processing timed out. Try again.' },
@@ -100,27 +107,35 @@ export async function POST(request) {
         );
       }
 
-      // 5. Create infographic artifact (portrait for LinkedIn)
+      // 5. Create infographic artifact
+      log('artifact', 'Creating infographic (portrait)...');
       const artifact = await client.artifacts.infographic.create(notebookId, {
         title: `Catchlight Light #${weekNumber} Infographic`,
         instructions: infographicBrief,
         customization: {
-          orientation: 2, // Portrait (optimal for LinkedIn feed)
+          orientation: 2, // Portrait
           levelOfDetail: 2, // Standard
         },
       });
+      log('artifact', `Created ${artifact.artifactId}, state=${artifact.state} (${Date.now() - startTime}ms)`);
 
-      // 6. Poll until artifact is ready
-      const readyArtifact = await waitForArtifact(
-        client, artifact.artifactId, notebookId
-      );
+      // If already ready (unlikely), skip polling
+      let readyArtifact = artifact;
+
+      if (artifact.state === ArtifactState.CREATING) {
+        log('artifact', 'Polling for completion...');
+        readyArtifact = await waitForArtifact(client, artifact.artifactId, notebookId);
+      }
 
       if (!readyArtifact) {
+        log('artifact', `TIMEOUT after ${Date.now() - startTime}ms`);
         return NextResponse.json(
-          { error: 'Infographic generation timed out (~90s). Try again.' },
+          { error: `Infographic generation timed out after ${Math.round((Date.now() - startTime) / 1000)}s. Try again.` },
           { status: 504 }
         );
       }
+
+      log('artifact', `Final state=${readyArtifact.state} (${Date.now() - startTime}ms)`);
 
       if (readyArtifact.state === ArtifactState.FAILED) {
         return NextResponse.json(
@@ -129,27 +144,43 @@ export async function POST(request) {
         );
       }
 
-      // 7. Get infographic image data
+      // 6. Get infographic image
       const imageUrl = readyArtifact.imageUrl;
+      log('image', `imageUrl: ${imageUrl ? 'found' : 'MISSING'}`);
+      log('image', `Full artifact keys: ${Object.keys(readyArtifact).join(', ')}`);
+
       if (!imageUrl) {
+        // Try alternative: the artifact might have image data directly
+        if (readyArtifact.imageData) {
+          log('image', 'Using imageData buffer directly');
+          const mimeType = readyArtifact.mimeType || 'image/png';
+          const imgBuffer = Buffer.from(readyArtifact.imageData);
+          const blobUrl = await storeInfographic(weekNumber, imgBuffer, mimeType);
+          return NextResponse.json({ success: true, infographicUrl: blobUrl });
+        }
+
         return NextResponse.json(
-          { error: 'No infographic image URL returned by NotebookLM.' },
+          { error: 'No infographic image returned. Artifact keys: ' + Object.keys(readyArtifact).join(', ') },
           { status: 500 }
         );
       }
 
-      // 8. Download image and store in Vercel Blob
+      // 7. Download and store in Vercel Blob
+      log('image', 'Downloading image...');
       const imgResponse = await fetch(imageUrl);
       if (!imgResponse.ok) {
         return NextResponse.json(
-          { error: `Failed to download infographic image: ${imgResponse.status}` },
+          { error: `Failed to download infographic: ${imgResponse.status}` },
           { status: 500 }
         );
       }
 
       const contentType = imgResponse.headers.get('content-type') || 'image/png';
       const imgBuffer = Buffer.from(await imgResponse.arrayBuffer());
+      log('image', `Downloaded ${imgBuffer.length} bytes, type=${contentType}`);
+
       const blobUrl = await storeInfographic(weekNumber, imgBuffer, contentType);
+      log('done', `Stored at ${blobUrl} (total: ${Date.now() - startTime}ms)`);
 
       return NextResponse.json({
         success: true,
@@ -157,12 +188,12 @@ export async function POST(request) {
       });
 
     } finally {
-      // Cleanup: delete notebook to keep account tidy
       if (notebookId) {
         try {
           await client.notebooks.delete(notebookId);
+          log('cleanup', 'Notebook deleted');
         } catch (cleanupErr) {
-          console.error('Notebook cleanup failed (non-blocking):', cleanupErr.message);
+          log('cleanup', `Failed: ${cleanupErr.message}`);
         }
       }
       client.dispose();
@@ -171,19 +202,18 @@ export async function POST(request) {
   } catch (error) {
     console.error('Infographic generation failed:', error);
 
-    // Detect auth errors
     const msg = error.message || '';
     if (msg.includes('401') || msg.includes('403') || msg.includes('auth') || msg.includes('Unauthorized')) {
       return NextResponse.json(
-        {
-          authError: true,
-          error: 'NotebookLM authentication failed. Your tokens may have expired. Refresh NOTEBOOKLM_AUTH_TOKEN and NOTEBOOKLM_COOKIES from your browser.',
-        },
+        { authError: true, error: 'NotebookLM auth failed. Refresh tokens in Vercel env vars.' },
         { status: 401 }
       );
     }
 
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: msg || 'Unknown error', elapsed: `${Date.now() - startTime}ms` },
+      { status: 500 }
+    );
   }
 }
 
@@ -194,7 +224,6 @@ function buildSourceContent(brief, dataPoints, articleContent) {
     content += `KEY DATA POINTS:\n${dataPoints.map((d, i) => `${i + 1}. ${d}`).join('\n')}\n\n`;
   }
 
-  // Include article excerpt (truncated to avoid source size limits)
   if (articleContent) {
     const excerpt = articleContent.substring(0, 4000);
     content += `SOURCE ARTICLE (excerpt):\n${excerpt}`;
@@ -210,11 +239,12 @@ async function waitForSource(client, notebookId, sourceId) {
     try {
       const sources = await client.sources.list(notebookId);
       const src = sources.find(s => s.sourceId === sourceId);
-      // SourceStatus: UNKNOWN=0, PROCESSING=1, READY=2, FAILED=3
       if (src && src.status !== SourceStatus.PROCESSING && src.status !== SourceStatus.UNKNOWN) {
         return src.status === SourceStatus.READY;
       }
-    } catch {}
+    } catch (e) {
+      log('source-poll', `Error: ${e.message}`);
+    }
     await sleep(POLL_INTERVAL_SOURCE);
   }
 
@@ -223,14 +253,21 @@ async function waitForSource(client, notebookId, sourceId) {
 
 async function waitForArtifact(client, artifactId, notebookId) {
   const start = Date.now();
+  let pollCount = 0;
 
   while (Date.now() - start < POLL_TIMEOUT_ARTIFACT) {
     try {
       const artifact = await client.artifacts.get(artifactId, notebookId);
+      pollCount++;
+      log('artifact-poll', `#${pollCount} state=${artifact.state} (${Date.now() - start}ms)`);
+
       if (artifact.state !== ArtifactState.CREATING) {
         return artifact;
       }
-    } catch {}
+    } catch (e) {
+      pollCount++;
+      log('artifact-poll', `#${pollCount} Error: ${e.message}`);
+    }
     await sleep(POLL_INTERVAL_ARTIFACT);
   }
 
