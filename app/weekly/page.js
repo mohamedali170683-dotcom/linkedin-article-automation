@@ -5,7 +5,7 @@ import {
   Sun, Calendar, Loader2, Copy, Check, RefreshCw, FileText,
   ArrowLeft, Send, Mail, Sparkles, Eye, Edit3, Save,
   ChevronDown, Video, BarChart3, MessageSquare, Zap, X,
-  ImagePlus, Trash2, Pencil, Bot, User, Download
+  ImagePlus, Trash2, Pencil, Bot, User, Download, ExternalLink, ClipboardCopy, Upload
 } from 'lucide-react';
 import Link from 'next/link';
 import catchlightCalendar from '../lib/catchlight-calendar.json';
@@ -642,43 +642,63 @@ export default function WeeklyEngine() {
     setGeneratingPillIndex(null);
   };
 
-  const generateInfographic = async () => {
+  const infographicFileRef = useRef(null);
+  const [briefCopied, setBriefCopied] = useState(false);
+
+  const copyBriefAndOpenNotebookLM = async () => {
     const pill = weekState?.pills?.[0];
-    const article = weekState?.article;
-    if (!pill?.infographicBrief) {
-      alert('Generate the Tuesday pill first — it needs an infographic brief.');
+    if (!pill?.infographicBrief) return;
+
+    const textToCopy = [
+      pill.infographicBrief,
+      '',
+      'KEY DATA POINTS:',
+      ...(pill.dataPoints || []).map((dp, i) => `${i + 1}. ${dp}`),
+    ].join('\n');
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setBriefCopied(true);
+      setTimeout(() => setBriefCopied(false), 3000);
+    } catch {
+      alert('Could not copy to clipboard. Please copy the brief manually.');
       return;
     }
+
+    window.open('https://notebooklm.google.com', '_blank');
+  };
+
+  const uploadInfographic = async (file) => {
+    if (!file || !weekNumber) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Only JPEG, PNG, or WebP images are allowed.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image must be under 10MB.');
+      return;
+    }
+
     setIsGeneratingInfographic(true);
     try {
-      const res = await fetch('/api/weekly/infographic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          weekNumber,
-          articleContent: article?.content || '',
-          infographicBrief: pill.infographicBrief,
-          dataPoints: pill.dataPoints || [],
-        }),
-      });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('weekNumber', weekNumber.toString());
+      formData.append('slot', 'infographic');
+
+      const res = await fetch('/api/weekly/image', { method: 'POST', body: formData });
       const data = await res.json();
-      if (!res.ok) {
-        if (data.authError) {
-          alert('NotebookLM auth expired. Refresh NOTEBOOKLM_AUTH_TOKEN and NOTEBOOKLM_COOKIES in Vercel env vars.');
-        } else {
-          throw new Error(data.error);
-        }
-        return;
-      }
-      if (data.infographicUrl) {
-        const updatedPills = [...(weekState.pills || [null, null, null])];
-        updatedPills[0] = { ...updatedPills[0], infographicUrl: data.infographicUrl };
-        const updated = { ...weekState, pills: updatedPills };
-        setWeekState(updated);
-        await saveWeekState({ pills: updatedPills });
-      }
+      if (!res.ok) throw new Error(data.error);
+
+      const updatedPills = [...(weekState.pills || [null, null, null])];
+      updatedPills[0] = { ...updatedPills[0], infographicUrl: data.image.url };
+      const updated = { ...weekState, pills: updatedPills };
+      setWeekState(updated);
+      await saveWeekState({ pills: updatedPills });
     } catch (e) {
-      alert('Infographic generation failed: ' + e.message);
+      alert('Upload failed: ' + e.message);
     }
     setIsGeneratingInfographic(false);
   };
@@ -1055,35 +1075,53 @@ export default function WeeklyEngine() {
                               </div>
                             )}
 
-                            {/* NotebookLM Infographic */}
+                            {/* NotebookLM Infographic — Semi-Auto */}
                             {idx === 0 && (
                               <div className="mt-3 pt-3 border-t border-green-500/20">
                                 {pill.infographicUrl ? (
                                   <div className="space-y-2">
                                     <div className="relative rounded-lg overflow-hidden border border-green-500/30">
-                                      <img src={pill.infographicUrl} alt="Generated infographic" className="w-full h-auto" />
+                                      <img src={pill.infographicUrl} alt="Infographic" className="w-full h-auto" />
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <a href={pill.infographicUrl} target="_blank" rel="noopener noreferrer" download
                                         className="px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-xs flex items-center gap-1 hover:bg-green-500/30">
                                         <Download className="w-3 h-3" />Download
                                       </a>
-                                      <button onClick={generateInfographic} disabled={isGeneratingInfographic}
-                                        className="px-3 py-1.5 border border-green-500/30 text-green-400 rounded-lg text-xs flex items-center gap-1 hover:bg-green-500/10 disabled:opacity-50">
-                                        <RefreshCw className={`w-3 h-3 ${isGeneratingInfographic ? 'animate-spin' : ''}`} />Regenerate
+                                      <button onClick={() => infographicFileRef.current?.click()}
+                                        className="px-3 py-1.5 border border-green-500/30 text-green-400 rounded-lg text-xs flex items-center gap-1 hover:bg-green-500/10">
+                                        <RefreshCw className="w-3 h-3" />Replace
                                       </button>
                                     </div>
                                   </div>
                                 ) : (
-                                  <button onClick={generateInfographic} disabled={isGeneratingInfographic}
-                                    className="w-full px-3 py-2 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium flex items-center justify-center gap-2 hover:bg-green-500/30 disabled:opacity-50">
-                                    {isGeneratingInfographic ? (
-                                      <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating infographic (~60s)...</>
-                                    ) : (
-                                      <><BarChart3 className="w-3.5 h-3.5" />Generate Infographic with NotebookLM</>
-                                    )}
-                                  </button>
+                                  <div className="space-y-2">
+                                    <div className="flex gap-2">
+                                      <button onClick={copyBriefAndOpenNotebookLM}
+                                        className="flex-1 px-3 py-2 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-green-500/30">
+                                        {briefCopied ? (
+                                          <><Check className="w-3.5 h-3.5" />Brief Copied! Opening...</>
+                                        ) : (
+                                          <><ClipboardCopy className="w-3.5 h-3.5" />Copy Brief &amp; Open NotebookLM</>
+                                        )}
+                                      </button>
+                                    </div>
+                                    <button onClick={() => infographicFileRef.current?.click()}
+                                      disabled={isGeneratingInfographic}
+                                      className="w-full px-3 py-2 border border-dashed border-green-500/30 text-green-400/70 rounded-lg text-xs flex items-center justify-center gap-1.5 hover:bg-green-500/5 hover:text-green-400 disabled:opacity-50">
+                                      {isGeneratingInfographic ? (
+                                        <><Loader2 className="w-3.5 h-3.5 animate-spin" />Uploading...</>
+                                      ) : (
+                                        <><Upload className="w-3.5 h-3.5" />Upload Infographic from NotebookLM</>
+                                      )}
+                                    </button>
+                                    <p className="text-[10px] text-slate-500 text-center">
+                                      1. Copy brief → 2. Create infographic in NotebookLM → 3. Download PNG → 4. Upload here
+                                    </p>
+                                  </div>
                                 )}
+                                <input ref={infographicFileRef} type="file" accept="image/*" className="hidden"
+                                  onChange={(e) => { if (e.target.files?.[0]) uploadInfographic(e.target.files[0]); e.target.value = ''; }} />
                               </div>
                             )}
                           </div>
