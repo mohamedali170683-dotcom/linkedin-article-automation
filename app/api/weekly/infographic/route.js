@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
-import { NotebookLMClient, ArtifactType, ArtifactState } from 'notebooklm-kit';
+import { NotebookLMClient, ArtifactType, ArtifactState, SourceStatus } from 'notebooklm-kit';
 
 export const maxDuration = 120;
 
@@ -83,13 +83,16 @@ export async function POST(request) {
       const sourceContent = buildSourceContent(infographicBrief, dataPoints, articleContent);
 
       // 3. Add text source
-      const source = await client.sources.addText(notebookId, {
+      const sourceResult = await client.sources.addFromText(notebookId, {
         title: `Week ${weekNumber} Infographic Data`,
         content: sourceContent,
       });
 
+      // addFromText returns string (sourceId) or AddSourceResult if chunked
+      const sourceId = typeof sourceResult === 'string' ? sourceResult : sourceResult.sourceId;
+
       // 4. Wait for source processing
-      const sourceReady = await waitForSource(client, notebookId, source.sourceId);
+      const sourceReady = await waitForSource(client, notebookId, sourceId);
       if (!sourceReady) {
         return NextResponse.json(
           { error: 'Source processing timed out. Try again.' },
@@ -207,8 +210,9 @@ async function waitForSource(client, notebookId, sourceId) {
     try {
       const sources = await client.sources.list(notebookId);
       const src = sources.find(s => s.sourceId === sourceId);
-      if (src && src.status !== 'PROCESSING' && src.status !== 'PENDING') {
-        return true;
+      // SourceStatus: UNKNOWN=0, PROCESSING=1, READY=2, FAILED=3
+      if (src && src.status !== SourceStatus.PROCESSING && src.status !== SourceStatus.UNKNOWN) {
+        return src.status === SourceStatus.READY;
       }
     } catch {}
     await sleep(POLL_INTERVAL_SOURCE);
