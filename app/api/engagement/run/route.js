@@ -4,7 +4,8 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export const maxDuration = 120;
 
-const APIFY_ACTOR = 'curious_coder~linkedin-post-search-scraper';
+// Pay-per-result actor ($0.005/post) — no rental subscription needed
+const APIFY_ACTOR = 'apimaestro~linkedin-posts-search-scraper-no-cookies';
 const POLL_INTERVAL = 4000;
 const MAX_POLL_ATTEMPTS = 30;
 
@@ -60,34 +61,32 @@ async function saveEngagementData(week, data) {
   });
 }
 
-async function scrapeLinkedIn(topics, apiKey) {
-  // Start actor run
+async function runActorForKeyword(keyword, apiKey) {
   const startRes = await fetch(
     `https://api.apify.com/v2/acts/${APIFY_ACTOR}/runs?token=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        queries: topics,
-        maxResults: 5,
-        datePosted: 'past-week',
+        keyword,
+        sortBy: 'date_posted',
+        maxPosts: 10,
       }),
     }
   );
 
   if (!startRes.ok) {
     const err = await startRes.text();
-    throw new Error(`Apify start failed: ${startRes.status} ${err}`);
+    console.error(`Apify start failed for "${keyword}": ${startRes.status} ${err}`);
+    return [];
   }
 
   const runData = await startRes.json();
   const runId = runData.data?.id;
-  if (!runId) throw new Error('No run ID returned from Apify');
+  if (!runId) return [];
 
-  // Poll for completion
   for (let i = 0; i < MAX_POLL_ATTEMPTS; i++) {
     await sleep(POLL_INTERVAL);
-
     const pollRes = await fetch(
       `https://api.apify.com/v2/actor-runs/${runId}?token=${apiKey}`
     );
@@ -96,36 +95,49 @@ async function scrapeLinkedIn(topics, apiKey) {
 
     if (status === 'SUCCEEDED') {
       const datasetId = pollData.data?.defaultDatasetId;
-      if (!datasetId) throw new Error('No dataset ID');
-
+      if (!datasetId) return [];
       const itemsRes = await fetch(
-        `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}&limit=40`
+        `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}&limit=15`
       );
       return await itemsRes.json();
     }
-
-    if (status === 'FAILED' || status === 'ABORTED' || status === 'TIMED-OUT') {
-      return null;
-    }
+    if (['FAILED', 'ABORTED', 'TIMED-OUT'].includes(status)) return [];
   }
+  return [];
+}
 
-  return null;
+async function scrapeLinkedIn(topics, apiKey) {
+  // Run actor once per topic keyword, merge results
+  const results = await Promise.all(
+    topics.map(topic => runActorForKeyword(topic, apiKey))
+  );
+  return results.flat();
+}
+
+function normalizePost(raw) {
+  return {
+    url: raw.url || raw.postUrl || raw.link || raw.postLink || '',
+    text: raw.text || raw.postText || raw.content || raw.postContent || '',
+    authorName: raw.authorName || raw.author || raw.authorFullName || raw.fullName || 'Unknown',
+  };
 }
 
 function deduplicatePosts(posts) {
   const seen = new Set();
-  return posts.filter(p => {
-    const url = p.url || p.postUrl || '';
-    if (!url || seen.has(url)) return false;
-    seen.add(url);
-    return true;
-  });
+  return posts
+    .map(normalizePost)
+    .filter(p => {
+      const key = p.url || p.text.substring(0, 80);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 async function scorePost(client, post) {
-  const authorName = post.authorName || post.author || 'Unknown';
-  const postUrl = post.url || post.postUrl || '';
-  const postText = (post.text || post.postText || '').substring(0, 1500);
+  // post is already normalized via normalizePost()
+  const { authorName, url: postUrl, text: fullText } = post;
+  const postText = fullText.substring(0, 1500);
 
   if (!postText.trim()) return null;
 
@@ -150,7 +162,7 @@ async function scorePost(client, post) {
     return {
       author: authorName,
       url: postUrl,
-      preview: (post.text || post.postText || '').substring(0, 200),
+      preview: fullText.substring(0, 200),
       score: scored.score,
       reason: scored.reason || '',
       comments: scored.comments || { insight: '', pov: '', question: '' },
@@ -173,15 +185,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'week is required (e.g. 2026-W10)' }, { status: 400 });
     }
 
-    const apiKey = process.env.APIFY_API_KEY;
+    const apiKey = process.env.APIFY_API_TOKEN || process.env.APIFY_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'APIFY_API_KEY not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'APIFY_API_TOKEN not configured' }, { status: 500 });
     }
 
-    // 1. Apify scrape
+    // 1. Apify scrape (runs one search per topic, merges results)
     const rawPosts = await scrapeLinkedIn(topics, apiKey);
-    if (!rawPosts) {
-      return NextResponse.json({ error: 'scrape_failed' });
+    if (!rawPosts || rawPosts.length === 0) {
+      return NextResponse.json({ error: 'scrape_failed', detail: 'No posts found — check Apify dashboard for run logs' });
     }
 
     const posts = deduplicatePosts(rawPosts);
