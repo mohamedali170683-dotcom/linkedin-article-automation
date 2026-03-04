@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sun, Calendar, ArrowRight } from 'lucide-react';
+import { Sun, Calendar, ArrowRight, MessageSquare } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -56,6 +56,28 @@ export default function Home() {
             </p>
             <div className="flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:gap-3 transition-all">
               Open Pipeline <ArrowRight className="w-4 h-4" />
+            </div>
+          </Link>
+
+          {/* Comments Engagement */}
+          <Link
+            href="/engagement"
+            className="group bg-slate-800 border border-slate-700 rounded-2xl p-6 hover:border-amber-500/50 transition-all"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">Comments Engagement</h2>
+                <p className="text-xs text-slate-400">Weekly</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-300 mb-4">
+              Weekly LinkedIn post radar — find relevant voices, score by topic, draft comments to build visibility.
+            </p>
+            <div className="flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:gap-3 transition-all">
+              Open Radar <ArrowRight className="w-4 h-4" />
             </div>
           </Link>
 
